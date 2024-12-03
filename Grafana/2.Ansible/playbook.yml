@@ -1,0 +1,105 @@
+---
+- name: Prepare cache and node exporter for all machines
+  hosts: group
+
+  tasks:
+    - name: Update cache
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: true
+
+    - name: Install node exporter
+      ansible.builtin.apt:
+        name: prometheus-node-exporter
+        state: latest
+
+- name: Configure iptables
+  hosts: all
+
+  tasks:
+    - name: Allow 188.93.16.0/22 traffic
+      ansible.builtin.iptables:
+        chain: INPUT
+        source: 188.93.16.0/22
+        jump: ACCEPT
+        action: insert
+
+    - name: Allow 87.228.12.0/23 traffic
+      ansible.builtin.iptables:
+        chain: INPUT
+        source: 87.228.12.0/23
+        jump: ACCEPT
+        action: insert
+
+    - name: Allow 87.228.13.0/23 traffic
+      ansible.builtin.iptables:
+        chain: INPUT
+        source: 87.228.13.0/23
+        jump: ACCEPT
+        action: insert
+
+    - name: Prohibit everything else
+      ansible.builtin.iptables:
+        chain: INPUT
+        reject_with: icmp-host-prohibited
+        action: append
+
+
+- name: Deploy prometheus
+  hosts: prometheus
+
+  tasks:
+    - name: Install prometheus
+      ansible.builtin.apt:
+        name: prometheus
+        state: latest
+
+    - name: Update prometheus config
+      ansible.builtin.template:
+        src: ./templates/prometheus.yml.j2
+        dest: /etc/prometheus/prometheus.yml
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Restart prometheus
+      ansible.builtin.systemd_service:
+        name: prometheus
+        state: restarted
+
+- name: Deploy grafana
+  hosts: grafana
+
+  tasks:
+    - name: Install grafana
+      ansible.builtin.shell:
+        cmd: "wget -q https://dl.grafana.com/oss/release/grafana_11.3.1_amd64.deb -P /tmp/; apt-get install -y /tmp/grafana_11.3.1_amd64.deb; rm -f /tmp/grafana_11.3.1_amd64.deb"
+
+    - name: Enable daemon_reload
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Add datasource
+      ansible.builtin.template:
+        src: ./templates/grafana.yml.j2
+        dest: /etc/grafana/provisioning/datasources/grafana.yml
+        owner: root
+        group: grafana
+        mode: "0644"
+
+    - name: Run Grafana
+      ansible.builtin.systemd_service:
+        enabled: true
+        name: grafana-server
+        state: restarted
+
+- name: Deploy nginx
+  hosts: nginx
+
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: latest
+      delegate_to: nginx
+      run_once: true
