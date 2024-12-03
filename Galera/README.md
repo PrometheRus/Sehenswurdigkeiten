@@ -1,4 +1,4 @@
-**Ubuntu 24.04.1 LTS**
+# Кластер Galera с MySQL на **Ubuntu 24.04 LTS**
 ## 1.1. Manual deployment (openstack cli)
 
 ### Предварительные условия:
