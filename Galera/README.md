@@ -1,17 +1,70 @@
-## 1.1. Manual setup of a cluster
+**Ubuntu 24.04.1 LTS**
+## 1.1. Manual deployment
 
-## 1.2 Automatic setup of a cluster:
 ### Предварительные условия:
-1. **Ubuntu 24.04.1 LTS**
-2. Подготовить локально Terraform (по [инструкции](https://docs.selectel.ru/terraform/quickstart/))
-2. Подготовить локально openstack cli (по [инструкции](https://docs.selectel.ru/en/cloud/servers/tools/openstack/))
+1. Подготовить локально openstack cli (по [инструкции](https://docs.selectel.ru/en/cloud/servers/tools/openstack/))
+```
+#!/bin/bash
+
+# Create net + subnet + router + ports
+openstack network create network_1
+openstack subnet create subnet_1 --network network_1 --subnet-range 192.168.199.0/24
+openstack router create router_1
+openstack router set router_1 --external-gateway external-network
+openstack router add subnet router_1 subnet_1
+for val in {1..4}; do openstack port create -q --network network_1 --fixed-ip subnet=subnet_1,ip-address=192.168.199.4${val} port${val}; done
+openstack floating ip create -q external-network --port port4
+
+# Create volumes
+image="b671a80e-9bf0-4861-9833-bd711bd8a02f" # Ubuntu 24.04
+for val in {1..4}; do openstack volume create -q --image ${image} --size 10 --type basic.ru-9a --availability-zone ru-9a boot-volume-${val}; done
+
+# Create VMs
+ssh-keygen -t ed25519 -f "$HOME/.ssh/virt" -q -N ""
+openstack keypair create --public-key "$HOME/.ssh/virt" keypair_1
+
+flavor='1012'
+for val in {1..4}; do
+  openstack server create server_"${val}" \
+  --flavor ${flavor} \
+  --volume boot-volume-"${val}" \
+  --port port"${val}" \
+  --key-name keypair_1 \
+  --availability-zone ru-9a;
+done
+
+# Create a loadbalancer
+openstack loadbalancer create --name lb_1 --vip-address 192.168.199.45 --vip-port-id port5 --flavor AMPH1.SNGL.2-1024
+sleep 120s;
+openstack loadbalancer listener create --name listener_1 --protocol TCP --protocol-port 3306 lb_1
+sleep 10;
+openstack loadbalancer pool create --name pool_1 --lb-algorithm ROUND_ROBIN --listener listener_1 --protocol TCP
+sleep 10;
+for val in {1..3}; do openstack loadbalancer member create --subnet-id subnet_1 --address 192.168.199.4${val} --protocol-port 3306 pool_1; sleep 10s; done
+openstack floating ip create external-network --port "$(openstack port list -f value | grep 192.168.199.45 | cut -f 1 -d ' ')"
+openstack loadbalancer healthmonitor create --delay 5 --max-retries 4 --timeout 10 --type TCP pool_1
+
+
+# Подчистить за собой
+openstack server delete "$(openstack server list -q -f value | cut -f 1 -d ' ')"
+openstack volume delete "$(openstack volume list -q -f value | cut -f 1 -d ' ')"
+openstack loadbalancer healthmonitor delete "$(openstack loadbalancer healthmonitor list -q -f value | cut -f 1 -d ' ')"
+openstack loadbalancer pool delete "$(openstack loadbalancer pool list -q -f value | cut -f 1 -d ' ')"
+openstack loadbalancer listener delete "$(openstack loadbalancer listener list -q -f value | cut -f 1 -d ' ')"
+openstack loadbalancer delete "$(openstack loadbalancer list -q -f value | cut -f 1 -d ' ')"
+for val in {1..4}; do openstack port delete port${val}; done
+openstack floating ip delete "$(openstack floating ip list -q -f value | cut -f 1 -d ' ')"
+```
+## 1.2 Automatic deployment (Terraform + Ansible):
+### Предварительные шаги:
+1. Подготовить локально Terraform (по [инструкции](https://docs.selectel.ru/terraform/quickstart/))
+2. Установить anisble-core
 3. Создать сервисный аккаунт с ролями (по инструкции):
    1. Администратор аккаунта
    2. Администратор проекта ```<project-name>```
    3. Администратор пользователей
 4. Заполнить переменные своими значениями в файле `./1.Terraform/_vars.tf`
    + selectel-domain
-   + selectel-project-name ??????
    + selectel-project-id
    + service-account-main-name
    + service-account-main-password
@@ -21,22 +74,22 @@
    ssh-keyen -t ed25519 -f ~/.ssh/virt
    ```
 
-## 2. Шаги выплонения
-1. Развернуть окружение через terraform:
+### Шаги выполнения
+1. Развернуть окружение:
     ```
-    cd 1.Terraform && terraform plan
+   cd 1.Terraform && terraform plan
    terraform fmt && terraform validate
    terraform apply
     ```
-1. Переходим в директорию с плейбуком:
+2. Перейти в директорию с плейбуком:
    ```
    cd ../2.Ansible/ 
    ```
-2. **После** выполнения terraform будут созданы 3 машины для кластера и 1 машина-бастион. 3 приватные адреса 3х кластерных машин и 1 публичный адрес машины-бастиона необходимо добавить в инвентори файл ```hosts.ini```
+3. **После** выполнения terraform будут созданы 3 машины для кластера и 1 машина-бастион. 3 приватные адреса 3х кластерных машин и 1 публичный адрес машины-бастиона руками добавить в  ```hosts.ini```
    ```
    vi hosts.init
    ```
-1. Копируем ранее сгенерированный ssh-ключ и ssh-config на машину-бастион для доступа к виртуальным машинам:
+4. Копируем ранее сгенерированный ssh-ключ и ssh-config на машину-бастион (замените в команде IP) для доступа к виртуальным машинам:
 ```
 tee root_config > /dev/null <<EOF
 Host *
@@ -48,11 +101,11 @@ rsync ~/.ssh/virt root@<bastion-ip>:/root/.ssh
 rsync ./root_config root@<bastion-ip>:/root/.ssh/config
 rm -f ./root_config
 ```
-2. Запускаем плейбук, который настраивает Galera Cluster
+5. Запустить плейбук:
    ```
    ansible-playbook playbook.yml
    ```
-1. Создаем БД, таблицу, и юзера, с которого будем обращаться к балансировщику:
+6. Создать БД, таблицу, и юзера, с которого будет обращаться к балансировщику:
    ```
    # Run once on any node:
    MariaDB [demo]> create database demo; use demo;
@@ -61,8 +114,8 @@ rm -f ./root_config
      name VARCHAR(100) NOT NULL,
      email VARCHAR(100) NOT NULL UNIQUE
    );
-   MariaDB [demo]> CREATE USER 'poomba'@'%'; 
-   MariaDB [demo]> GRANT ALL PRIVILEGES ON demo.users To 'poomba'@'%' IDENTIFIED BY '3Uu918Kb0jswhhT';
+   MariaDB [demo]> CREATE USER 'username'@'%'; 
+   MariaDB [demo]> GRANT ALL PRIVILEGES ON demo.users To '<username>'@'%' IDENTIFIED BY '<password>';
    ```
 
 ## 3. Ломаем кластер:
@@ -132,7 +185,7 @@ MariaDB [demo]> SHOW STATUS LIKE 'wsrep_cluster%';       # expected: Primary
 ```
 mysql -h <смотри-вывод-терраформа> -p 3306 -u poomba -p 
 
-$mysql -h 188.124.51.218 -u poobma demo -e "select * from users;"
+$mysql -h 188.124.51.218 -u <username> demo -e "select * from users;"
 +----+-------+--------------+
 | id | name  | email        |
 +----+-------+--------------+

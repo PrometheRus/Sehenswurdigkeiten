@@ -1,15 +1,3 @@
-resource "openstack_compute_flavor_v2" "flavor_1" {
-  name      = "valkovskii.n-test"
-  vcpus     = 2
-  ram       = 2048
-  disk      = 0
-  is_public = false
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "selectel_vpc_keypair_v2" "keypair_1" {
   name    = "keypair"
   public_key = file("~/.ssh/virt.pub")
@@ -18,7 +6,7 @@ resource "selectel_vpc_keypair_v2" "keypair_1" {
 
 resource "openstack_compute_instance_v2" "server_1" {
   name              = "server-1"
-  flavor_id         = openstack_compute_flavor_v2.flavor_1.id
+  flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = "ru-9a"
 
@@ -51,7 +39,7 @@ resource "openstack_compute_instance_v2" "server_1" {
 
 resource "openstack_compute_instance_v2" "server_2" {
   name              = "server-2"
-  flavor_id         = openstack_compute_flavor_v2.flavor_1.id
+  flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = "ru-9a"
 
@@ -84,7 +72,7 @@ resource "openstack_compute_instance_v2" "server_2" {
 
 resource "openstack_compute_instance_v2" "server_3" {
   name              = "server-3"
-  flavor_id         = openstack_compute_flavor_v2.flavor_1.id
+  flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = "ru-9a"
 
@@ -117,7 +105,7 @@ resource "openstack_compute_instance_v2" "server_3" {
 
 resource "openstack_compute_instance_v2" "server_bastion" {
   name              = "server-bastion"
-  flavor_id         = openstack_compute_flavor_v2.flavor_1.id
+  flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = "ru-9a"
   # user_data         = file("./metadata/init.yml")
