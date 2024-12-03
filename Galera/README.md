@@ -150,14 +150,17 @@ sed -i 's/wsrep_on=OFF/wsrep_on=ON/' /etc/mysql/mariadb.conf.d/70-custom.cnf
 systemctl restart mysql; mysql demo
 
 MariaDB [demo]> show global variables like 'wsrep_on';  # expected: ON
+```
+#### Итог: node1 нельзя запустить, node 2 & 3 недоступны для чтения и записи:
+```
+# node 2 & 3
+
 MariaDB [demo]> select * from users;                    # exptected: ERROR 1047 (08S01): WSREP has not yet prepared node for application use
 MariaDB [demo]> SHOW STATUS LIKE 'wsrep_cluster%';      # expected: Disconnected
-```
-```
+
 # node 1
 systemctl restart mysql                 # expected: Failed to start mariadb.service
 ```
-#### Итог: node1 нельзя запустить, node 2 & 3 недоступны для чтения и записи
 
 ## 4. Чиним кластер
 ```
@@ -172,13 +175,14 @@ galera_new_cluster
 
 # node 2 &  3
 systemctl start mysql
-
+```
+#### Итог: все ноды запущены, данные синхронизированны с node1:
+```
 # All nodes:
 cat /var/lib/mysql/grastate.dat;
 mysql demo
 MariaDB [demo]> SHOW STATUS LIKE 'wsrep_cluster%';       # expected: Primary
 ```
-#### Итог: все ноды запущены, данные синхронизированны с node1
 
 ## 5. Обращение к балансировщику
 ```
