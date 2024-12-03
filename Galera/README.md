@@ -1,5 +1,5 @@
 **Ubuntu 24.04.1 LTS**
-## 1.1. Manual deployment
+## 1.1. Manual deployment (openstack cli)
 
 ### Предварительные условия:
 1. Подготовить локально openstack cli (по [инструкции](https://docs.selectel.ru/en/cloud/servers/tools/openstack/))
