@@ -11,7 +11,7 @@
    3. Администратор пользователей
 4. Заполнить переменные своими значениями в файле `./1.Terraform/_vars.tf`
    + selectel-domain
-   + selectel-project-name
+   + selectel-project-name ??????
    + selectel-project-id
    + service-account-main-name
    + service-account-main-password

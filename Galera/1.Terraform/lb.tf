@@ -15,7 +15,7 @@ resource "openstack_lb_listener_v2" "listener_1" {
 # Create a group
 resource "openstack_lb_pool_v2" "pool_1" {
   name        = "pool"
-  protocol    = "PROXY"
+  protocol    = "TCP"
   lb_method   = "ROUND_ROBIN"
   listener_id = openstack_lb_listener_v2.listener_1.id
 }

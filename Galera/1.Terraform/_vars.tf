@@ -4,12 +4,12 @@ variable "selectel-domain" {
   description = "The id of the user account"
 }
 
-### The project is already created. Using its data
-variable "selectel-project-name" {
-  default     = "Default"
-  type        = string
-  description = "The name of the project"
-}
+# ### The project is already created. Using its data
+# variable "selectel-project-name" {
+#   default     = "Default"
+#   type        = string
+#   description = "The name of the project"
+# }
 
 variable "selectel-project-id" {
   default     = "bcbf57bfdcdb49ce9aa71218bef54283"

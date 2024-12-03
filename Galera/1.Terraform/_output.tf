@@ -13,3 +13,7 @@ output "private_ip_address_3" {
 output "public_ip_address_bastion" {
   value = openstack_networking_floatingip_v2.floating_bastion.address
 }
+
+output "public_ip_address_lb" {
+  value = openstack_networking_floatingip_v2.floatingip_lb.address
+}
