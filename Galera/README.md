@@ -61,8 +61,8 @@ rm -f ./root_config
      name VARCHAR(100) NOT NULL,
      email VARCHAR(100) NOT NULL UNIQUE
    );
-   MariaDB [demo]> CREATE USER 'poobma'@'%'; 
-   MariaDB [demo]> GRANT ALL PRIVILEGES ON demo.users To 'poobma'@'%' IDENTIFIED BY '3Uu918Kb0jswhhT';
+   MariaDB [demo]> CREATE USER 'poomba'@'%'; 
+   MariaDB [demo]> GRANT ALL PRIVILEGES ON demo.users To 'poomba'@'%' IDENTIFIED BY '3Uu918Kb0jswhhT';
    ```
 
 ## 3. Ломаем кластер:
