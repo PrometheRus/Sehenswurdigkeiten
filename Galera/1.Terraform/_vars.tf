@@ -1,11 +1,11 @@
 variable "selectel-domain" {
-  default     = "390181"
+  default     = "{{ REPLACE ME }}>"
   type        = string
-  description = "The id of the user account"
+  description = "The id of the user's domain"
 }
 
 variable "selectel-project-id" {
-  default     = "bcbf57bfdcdb49ce9aa71218bef54283"
+  default     = "{{ REPLACE ME }}"
   type        = string
   description = "The id of the project"
 }
@@ -13,25 +13,25 @@ variable "selectel-project-id" {
 
 ### The service account is already created. Using its data
 variable "service-account-main-name" {
-  default     = "service-account-main"
+  default     = "{{ REPLACE ME }}"
   type        = string
   description = "The name of the service account"
 }
 
 variable "service-account-main-password" {
-  default     = "{-n4-Ye5"
+  default     = "{{ REPLACE ME }}"
   type        = string
   description = "The password of the service account"
 }
 
 variable "service-account-main-id" {
-  default     = "c668b8ab398c4685aa5b621b4c5a3693"
+  default     = "{{ REPLACE ME }}"
   type        = string
   description = "The ID of the service account"
 }
 
 variable "flavor_id" {
-  default     = "1012"
+  default     = "1012"                                    # SL1.1-2048
   type        = string
   description = "The ID of the flavor to use"
 }
