@@ -130,5 +130,5 @@ MariaDB [demo]> SHOW STATUS LIKE 'wsrep_cluster%';       # expected: Primary
 ```
 ## 5. Обращение к балансировщику
 ```
-mysql -h <смотри-вывод-терраформа> -p 3306 -u poomba -p
+mysql -h <смотри-вывод-терраформа> -p 3306 -u poomba -p 
 ```
