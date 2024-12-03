@@ -1,5 +1,5 @@
 variable "selectel-domain" {
-  default     = ""
+  default     = "390181"
   type        = string
   description = "The id of the user account"
 }
@@ -20,19 +20,19 @@ variable "selectel-project-id" {
 
 ### The service account is already created. Using its data
 variable "service-account-main-name" {
-  default     = "service-account-grafana"
+  default     = ""
   type        = string
   description = "The name of the service account"
 }
 
 variable "service-account-main-password" {
-  default     = ""
+  default     = "6FgxptKW"
   type        = string
   description = "The password of the service account"
 }
 
 variable "service-account-main-id" {
-  default     = ""
+  default     = "0b4e19fbcecf48c5b2dda991ac057bc7"
   type        = string
   description = "The ID of the service account"
 }

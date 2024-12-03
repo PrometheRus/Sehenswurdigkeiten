@@ -44,17 +44,6 @@ for val in {1..3}; do openstack loadbalancer member create --subnet-id subnet_1 
 openstack floating ip create external-network --port "$(openstack port list -f value | grep 192.168.199.45 | cut -f 1 -d ' ')"
 openstack loadbalancer healthmonitor create --delay 5 --max-retries 4 --timeout 10 --type TCP pool_1
 ```
-```
-# Подчистить за собой (при необходимости)
-openstack server delete "$(openstack server list -q -f value | cut -f 1 -d ' ')"
-openstack volume delete "$(openstack volume list -q -f value | cut -f 1 -d ' ')"
-openstack loadbalancer healthmonitor delete "$(openstack loadbalancer healthmonitor list -q -f value | cut -f 1 -d ' ')"
-openstack loadbalancer pool delete "$(openstack loadbalancer pool list -q -f value | cut -f 1 -d ' ')"
-openstack loadbalancer listener delete "$(openstack loadbalancer listener list -q -f value | cut -f 1 -d ' ')"
-openstack loadbalancer delete "$(openstack loadbalancer list -q -f value | cut -f 1 -d ' ')"
-for val in {1..4}; do openstack port delete port${val}; done
-openstack floating ip delete "$(openstack floating ip list -q -f value | cut -f 1 -d ' ')"
-```
 ## 1.2 Automatic deployment (Terraform):
 ### Предварительные шаги:
 1. Подготовить локально Terraform (по [инструкции](https://docs.selectel.ru/terraform/quickstart/))
