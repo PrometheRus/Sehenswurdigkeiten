@@ -55,15 +55,14 @@ openstack loadbalancer delete "$(openstack loadbalancer list -q -f value | cut -
 for val in {1..4}; do openstack port delete port${val}; done
 openstack floating ip delete "$(openstack floating ip list -q -f value | cut -f 1 -d ' ')"
 ```
-## 1.2 Automatic deployment (Terraform + Ansible):
+## 1.2 Automatic deployment (Terraform):
 ### Предварительные шаги:
 1. Подготовить локально Terraform (по [инструкции](https://docs.selectel.ru/terraform/quickstart/))
-2. Установить anisble-core
-3. Создать сервисный аккаунт с ролями (по инструкции):
+2. Создать сервисный аккаунт с ролями (по инструкции):
    1. Администратор аккаунта
    2. Администратор проекта ```<project-name>```
    3. Администратор пользователей
-4. Заполнить переменные своими значениями в файле `./1.Terraform/_vars.tf`
+4. Указать переменные **своими** значениями в файле `./1.Terraform/_vars.tf`
    + selectel-domain
    + selectel-project-id
    + service-account-main-name
@@ -77,15 +76,23 @@ openstack floating ip delete "$(openstack floating ip list -q -f value | cut -f 
 ### Шаги выполнения
 1. Развернуть окружение:
     ```
-   cd 1.Terraform && terraform plan
+   git clone git@github.com:PrometheRus/Sehenswurdigkeiten.git
+   cd Sehenswurdigkeiten/Galera/1.Terraform/
    terraform fmt && terraform validate
+   terraform plan
    terraform apply
     ```
+**После** выполнения будут созданы 3 ВМ для кластера и 1 ВМ-бастион. 
+
+## 2. Provisioning (настройка кластера через Ansible):
+### Предварительные шаги:
+1. Установить anisble-core
+### Шаги выполнение
 2. Перейти в директорию с плейбуком:
    ```
-   cd ../2.Ansible/ 
+   cd Sehenswurdigkeiten/Galera/2.Ansible/ 
    ```
-3. **После** выполнения terraform будут созданы 3 машины для кластера и 1 машина-бастион. 3 приватные адреса 3х кластерных машин и 1 публичный адрес машины-бастиона руками добавить в  ```hosts.ini```
+3. 3 приватные адреса 3х ВМ и 1 публичный адрес ВМ-бастиона ручками добавить в  ```hosts.ini```
    ```
    vi hosts.init
    ```
@@ -161,6 +168,7 @@ MariaDB [demo]> SHOW STATUS LIKE 'wsrep_cluster%';      # expected: Disconnected
 # node 1
 systemctl restart mysql                 # expected: Failed to start mariadb.service
 ```
+#### Итог: node1 нельзя запустить, node 2 & 3 недоступны для чтения и записи
 
 ## 4. Чиним кластер
 ```
@@ -181,6 +189,8 @@ cat /var/lib/mysql/grastate.dat;
 mysql demo
 MariaDB [demo]> SHOW STATUS LIKE 'wsrep_cluster%';       # expected: Primary
 ```
+#### Итог: все ноды запущены, данные синхронизированны с node1
+
 ## 5. Обращение к балансировщику
 ```
 mysql -h <смотри-вывод-терраформа> -p 3306 -u poomba -p 
