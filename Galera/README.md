@@ -131,4 +131,19 @@ MariaDB [demo]> SHOW STATUS LIKE 'wsrep_cluster%';       # expected: Primary
 ## 5. Обращение к балансировщику
 ```
 mysql -h <смотри-вывод-терраформа> -p 3306 -u poomba -p 
+
+$mysql -h 188.124.51.218 -u poobma demo -e "select * from users;"
++----+-------+--------------+
+| id | name  | email        |
++----+-------+--------------+
+|  1 | node0 | 01@gmail.com |
+|  4 | node0 | 02@gmail.com |
+|  7 | node0 | 03@gmail.com |
+| 10 | node1 | 1@gmail.com  |
+| 11 | node1 | 2@gmail.com  |
+| 12 | node1 | 3@gmail.com  |
+| 13 | node1 | 4@gmail.com  |
+| 22 | node1 | 5@gmail.com  |
++----+-------+--------------+
+
 ```
