@@ -1,5 +1,5 @@
 variable "selectel-domain" {
-  default     = "390181"
+  default     = ""
   type        = string
   description = "The id of the user account"
 }
@@ -26,13 +26,13 @@ variable "service-account-main-name" {
 }
 
 variable "service-account-main-password" {
-  default     = "6FgxptKW"
+  default     = ""
   type        = string
   description = "The password of the service account"
 }
 
 variable "service-account-main-id" {
-  default     = "0b4e19fbcecf48c5b2dda991ac057bc7"
+  default     = ""
   type        = string
   description = "The ID of the service account"
 }

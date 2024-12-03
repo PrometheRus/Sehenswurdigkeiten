@@ -43,9 +43,9 @@ sleep 10;
 for val in {1..3}; do openstack loadbalancer member create --subnet-id subnet_1 --address 192.168.199.4${val} --protocol-port 3306 pool_1; sleep 10s; done
 openstack floating ip create external-network --port "$(openstack port list -f value | grep 192.168.199.45 | cut -f 1 -d ' ')"
 openstack loadbalancer healthmonitor create --delay 5 --max-retries 4 --timeout 10 --type TCP pool_1
-
-
-# Подчистить за собой
+```
+```
+# Подчистить за собой (при необходимости)
 openstack server delete "$(openstack server list -q -f value | cut -f 1 -d ' ')"
 openstack volume delete "$(openstack volume list -q -f value | cut -f 1 -d ' ')"
 openstack loadbalancer healthmonitor delete "$(openstack loadbalancer healthmonitor list -q -f value | cut -f 1 -d ' ')"
