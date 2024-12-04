@@ -104,3 +104,4 @@ rm -f ./root_config
 **Результат: доступен дашборд с системными метриками с возможностью выбора из 3х машин**
 ![img.png](img.png)
 
+### Моя графана доступна по [ссылке](http://87.228.17.223:3000/d/rYdddlPWk/node-exporter-full?orgId=1&from=now-24h&to=now&timezone=browser&var-datasource=default&var-job=node&var-node=192.168.199.10:9100&var-diskdevices=%5Ba-z%5D%2B%7Cnvme%5B0-9%5D%2Bn%5B0-9%5D%2B%7Cmmcblk%5B0-9%5D%2B&refresh=1m). Креды: **viewer:viewer**, доступ из под 188.93.16.0/22
