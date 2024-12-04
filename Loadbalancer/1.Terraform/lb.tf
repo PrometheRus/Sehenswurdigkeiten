@@ -25,7 +25,7 @@ resource "openstack_lb_member_v2" "member_1" {
   name          = "member"
   subnet_id     = openstack_networking_subnet_v2.subnet_1.id
   pool_id       = openstack_lb_pool_v2.pool_1.id
-  address       = openstack_compute_instance_v2.server_1.access_ip_v4
+  address       = openstack_compute_instance_v2.nginx1.access_ip_v4
   protocol_port = "3306"
 }
 
@@ -33,15 +33,7 @@ resource "openstack_lb_member_v2" "member_2" {
   name          = "member"
   subnet_id     = openstack_networking_subnet_v2.subnet_1.id
   pool_id       = openstack_lb_pool_v2.pool_1.id
-  address       = openstack_compute_instance_v2.server_2.access_ip_v4
-  protocol_port = "3306"
-}
-
-resource "openstack_lb_member_v2" "member_3" {
-  name          = "member"
-  subnet_id     = openstack_networking_subnet_v2.subnet_1.id
-  pool_id       = openstack_lb_pool_v2.pool_1.id
-  address       = openstack_compute_instance_v2.server_3.access_ip_v4
+  address       = openstack_compute_instance_v2.nginx2.access_ip_v4
   protocol_port = "3306"
 }
 
