@@ -23,7 +23,7 @@ resource "openstack_networking_router_interface_v2" "router_interface_1" {
   subnet_id = openstack_networking_subnet_v2.subnet_1.id
 }
 
-resource "openstack_networking_port_v2" "port_1" {
+resource "openstack_networking_port_v2" "port_grafana" {
   name       = "port"
   network_id = openstack_networking_network_v2.network_1.id
 
@@ -32,7 +32,7 @@ resource "openstack_networking_port_v2" "port_1" {
   }
 }
 
-resource "openstack_networking_port_v2" "port_2" {
+resource "openstack_networking_port_v2" "port_prometheus" {
   name       = "port"
   network_id = openstack_networking_network_v2.network_1.id
 
@@ -41,7 +41,7 @@ resource "openstack_networking_port_v2" "port_2" {
   }
 }
 
-resource "openstack_networking_port_v2" "port_3" {
+resource "openstack_networking_port_v2" "port_nginx" {
   name       = "port"
   network_id = openstack_networking_network_v2.network_1.id
 
@@ -51,33 +51,11 @@ resource "openstack_networking_port_v2" "port_3" {
 }
 
 # Assign a PUBLIC IP for the instance 1
-resource "openstack_networking_floatingip_v2" "floatingip_1" {
+resource "openstack_networking_floatingip_v2" "floatingip_grafana" {
   pool = "external-network"
 }
 
 resource "openstack_networking_floatingip_associate_v2" "association_1" {
-  port_id     = openstack_networking_port_v2.port_1.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_1.address
-}
-
-
-# Assign a PUBLIC IP for the instance 2
-resource "openstack_networking_floatingip_v2" "floatingip_2" {
-  pool = "external-network"
-}
-
-resource "openstack_networking_floatingip_associate_v2" "association_2" {
-  port_id     = openstack_networking_port_v2.port_2.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_2.address
-}
-
-
-# Assign a PUBLIC IP for the instance 3
-resource "openstack_networking_floatingip_v2" "floatingip_3" {
-  pool = "external-network"
-}
-
-resource "openstack_networking_floatingip_associate_v2" "association_3" {
-  port_id     = openstack_networking_port_v2.port_3.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_3.address
+  port_id     = openstack_networking_port_v2.port_grafana.id
+  floating_ip = openstack_networking_floatingip_v2.floatingip_grafana.address
 }

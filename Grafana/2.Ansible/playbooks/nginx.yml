@@ -1,0 +1,10 @@
+---
+- name: Deploy nginx
+  gather_facts: no
+  hosts: nginx
+
+  tasks:
+    - name: Install nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: latest

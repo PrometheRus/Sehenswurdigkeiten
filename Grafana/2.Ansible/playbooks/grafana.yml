@@ -1,0 +1,59 @@
+---
+- name: Deploy grafana
+  gather_facts: no
+  hosts: bastion
+
+  tasks:
+    - name: Install a grafana_11.3.1_amd64.deb package from the internet
+      ansible.builtin.apt:
+        deb: https://dl.grafana.com/oss/release/grafana_11.3.1_amd64.deb
+
+    - name: Add custom datasource
+      ansible.builtin.template:
+        src: ./templates/grafana.yml.j2
+        dest: /etc/grafana/provisioning/datasources/grafana.yml
+        owner: root
+        group: grafana
+        mode: "0644"
+
+    - name: Enable daemon_reload
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Restart Grafana
+      ansible.builtin.systemd_service:
+        enabled: true
+        name: grafana-server
+        state: restarted
+
+    # Iptables block
+    - name: Allow all 192.168.199.0/24 traffic
+      ansible.builtin.iptables:
+        in_interface: eth0
+        chain: INPUT
+        source: 192.168.199.0/24
+        jump: ACCEPT
+        action: insert
+
+    - name: Allow 188.93.16.0/22 subnet
+      ansible.builtin.iptables:
+        in_interface: eth0
+        chain: INPUT
+        source: 188.93.16.0/22
+        jump: ACCEPT
+        action: insert
+
+    - name: Allow related and established connections
+      ansible.builtin.iptables:
+        in_interface: eth0
+        chain: INPUT
+        ctstate: ESTABLISHED,RELATED
+        jump: ACCEPT
+        action: insert
+
+    - name: Prohibit everything else
+      ansible.builtin.iptables:
+        in_interface: eth0
+        chain: INPUT
+        reject_with: icmp-host-prohibited
+        action: append

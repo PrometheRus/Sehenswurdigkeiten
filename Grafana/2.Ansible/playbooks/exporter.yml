@@ -1,0 +1,15 @@
+---
+- name: Prepare cache and node exporter for all machines
+  gather_facts: no
+  hosts: all:!grafana
+
+  tasks:
+    - name: Update cache
+      ansible.builtin.apt:
+        update_cache: true
+        upgrade: true
+
+    - name: Install node exporter
+      ansible.builtin.apt:
+        name: prometheus-node-exporter
+        state: latest

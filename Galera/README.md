@@ -186,9 +186,9 @@ MariaDB [demo]> SHOW STATUS LIKE 'wsrep_cluster%';       # expected: Primary
 
 ## 5. Обращение к балансировщику
 ```
-mysql -h <смотри-вывод-терраформа> -p 3306 -u poomba -p 
+mysql -h <смотри-вывод-терраформа-или-панель-облака> -p 3306 -u <user> -p 
 
-$mysql -h 188.124.51.218 -u <username> demo -e "select * from users;"
+$mysql -h 188.124.51.218 -u poomba demo -e "select * from users;"
 +----+-------+--------------+
 | id | name  | email        |
 +----+-------+--------------+

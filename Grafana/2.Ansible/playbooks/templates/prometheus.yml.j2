@@ -24,7 +24,8 @@ scrape_configs:
     # scheme defaults to 'http'.
 
     static_configs:
-      - targets: [ {{ hostvars['prometheus']['ansible_facts']['default_ipv4']['address'] }}:9090 ]
+      # - targets: [ {{ hostvars['prometheus']['ansible_facts']['default_ipv4']['address'] }}:9090 ]
+      - targets: ["localhost:9090"]
 
 
   - job_name: 'node'
@@ -36,4 +37,4 @@ scrape_configs:
     # scheme defaults to 'http'.
 
     static_configs:
-      - targets: [{% for host in groups['cluster'] %}{{ hostvars[host].ansible_host }}:9100{% if not loop.last %},{% endif %}{% endfor %}]
+      - targets: [{% for host in groups['group'] %}{{ hostvars[host].ansible_host }}:9100{% if not loop.last %},{% endif %}{% endfor %},]

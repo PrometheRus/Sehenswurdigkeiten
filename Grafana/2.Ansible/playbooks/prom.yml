@@ -1,0 +1,23 @@
+---
+
+- name: Deploy prometheus
+  hosts: prometheus
+
+  tasks:
+    - name: Install prometheus
+      ansible.builtin.apt:
+        name: prometheus
+        state: latest
+
+    - name: Update prometheus config
+      ansible.builtin.template:
+        src: ./templates/prometheus.yml.j2
+        dest: /etc/prometheus/prometheus.yml
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Restart prometheus
+      ansible.builtin.systemd_service:
+        name: prometheus
+        state: restarted
