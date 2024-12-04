@@ -113,6 +113,8 @@ rm -f ./root_config
 ```
 docker compose -p demo up
 ...
+
+# Проверяем, что все "бегит"
 root@docker:~# docker compose -p demo ps
 NAME                IMAGE                      COMMAND                  SERVICE      CREATED         STATUS                   PORTS
 demo-cadvisor-1     gcr.io/cadvisor/cadvisor   "/usr/bin/cadvisor -…"   cadvisor     6 minutes ago   Up 6 minutes (healthy)   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp
@@ -123,7 +125,7 @@ demo-nginx-2        nginx                      "/docker-entrypoint.…"   nginx 
 demo-nginx-3        nginx                      "/docker-entrypoint.…"   nginx        6 minutes ago   Up 6 minutes             80/tcp
 demo-prometheus-1   prom/prometheus            "/bin/prometheus --c…"   prometheus   6 minutes ago   Up 6 minutes             0.0.0.0:9090->9090/tcp, :::9090->9090/tcp
 ```
-2. Проверяем по ``<public_ip_address_docker>:3000``, что Grafana поднялась
+2. Проверяем в браузере по ``<public_ip_address_docker>:3000``, что Grafana поднялась
 3. Импортируем ручками дашборд **14282**
 
 **Результат: доступен дашборд с системными метриками с возможностью выбора из 7ми контейнеров**
