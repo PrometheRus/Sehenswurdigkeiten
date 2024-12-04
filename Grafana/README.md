@@ -66,7 +66,7 @@ done
    terraform plan
    terraform apply
     ```
-**После** выполнения будут созданы 3 ВМ. В выводе команды будут указаные приватные (3 шт) и публичные (1 шт) адреса машин.
+**После** выполнения будут созданы 4 ВМ. В выводе команды будут указаные приватные (4 шт) и публичные (2 шт) адреса машин.
 
 ## 2. Provisioning (настройка кластера через Ansible):
 ### Предварительные шаги:
@@ -105,3 +105,26 @@ rm -f ./root_config
 ![img.png](img.png)
 
 ### Моя графана доступна по [ссылке](http://87.228.27.130:3000/d/rYdddlPWk/node-exporter-full). Креды: **viewer:viewer**, доступ из под 188.93.16.0/22 (могу открыть еще при необходимости)
+
+## 3. Docker-compose:
+Терраформ уже развернул машину **docker**. Дополнительные действия по подготовке не требуются.
+
+1. Заходим по **ssh** на машину ``<public_ip_address_docker>`` и запускаем:
+```
+docker compose -p demo up
+...
+root@docker:~# docker compose -p demo ps
+NAME                IMAGE                      COMMAND                  SERVICE      CREATED         STATUS                   PORTS
+demo-cadvisor-1     gcr.io/cadvisor/cadvisor   "/usr/bin/cadvisor -…"   cadvisor     6 minutes ago   Up 6 minutes (healthy)   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp
+demo-grafana-1      grafana/grafana            "/run.sh"                grafana      6 minutes ago   Up 6 minutes             0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+demo-lb-1           nginx                      "/docker-entrypoint.…"   lb           6 minutes ago   Up 6 minutes             80/tcp, 0.0.0.0:8888->8888/tcp, :::8888->8888/tcp
+demo-nginx-1        nginx                      "/docker-entrypoint.…"   nginx        6 minutes ago   Up 6 minutes             80/tcp
+demo-nginx-2        nginx                      "/docker-entrypoint.…"   nginx        6 minutes ago   Up 6 minutes             80/tcp
+demo-nginx-3        nginx                      "/docker-entrypoint.…"   nginx        6 minutes ago   Up 6 minutes             80/tcp
+demo-prometheus-1   prom/prometheus            "/bin/prometheus --c…"   prometheus   6 minutes ago   Up 6 minutes             0.0.0.0:9090->9090/tcp, :::9090->9090/tcp
+```
+2. Проверяем по ``<public_ip_address_docker>:3000``, что Grafana поднялась
+3. Импортируем ручками дашборд **14282**
+
+**Результат: доступен дашборд с системными метриками с возможностью выбора из 7ми контейнеров**
+![img_2.png](img_2.png)
