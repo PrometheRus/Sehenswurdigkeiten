@@ -10,3 +10,6 @@
 
 - name: Deploy nginx
   ansible.builtin.import_playbook: ./playbooks/nginx.yml
+
+- name: Deploy docker
+  ansible.builtin.import_playbook: ./playbooks/docker.yml

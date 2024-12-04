@@ -1,30 +1,37 @@
 ---
-- name: Deploy grafana
+- name: Prepare everything for running docker-compose
   gather_facts: false
-  hosts: bastion
+  hosts: docker_group
 
   tasks:
-    - name: Install a grafana_11.3.1_amd64.deb package from the internet
+    - name: Copy files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/root/"
+        mode: '0644'
+      with_items:
+        - ./templates/custom.conf
+        - ./templates/docker-compose.yml
+        - ./templates/grafana.yml
+        - ./templates/lb.conf
+        - ./templates/prometheus.yml
+
+    - name: Copy file for Docker's apt repository.
+      ansible.builtin.copy:
+        src: ./templates/docker.list
+        dest: /etc/apt/sources.list.d/docker.list
+        mode: '0644'
+
+    - name: Update cache and install Docker
       ansible.builtin.apt:
-        deb: https://dl.grafana.com/oss/release/grafana_11.3.1_amd64.deb
-
-    - name: Add custom datasource
-      ansible.builtin.template:
-        src: ./templates/grafana.yml.j2
-        dest: /etc/grafana/provisioning/datasources/grafana.yml
-        owner: root
-        group: grafana
-        mode: "0644"
-
-    - name: Enable daemon_reload
-      ansible.builtin.systemd_service:
-        daemon_reload: true
-
-    - name: Restart Grafana
-      ansible.builtin.systemd_service:
-        enabled: true
-        name: grafana-server
-        state: restarted
+        update_cache: true
+        name: "{{ item }}"
+      with_items:
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
 
     # Iptables block
     - name: Allow all 192.168.199.0/24 traffic

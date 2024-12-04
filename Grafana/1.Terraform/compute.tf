@@ -69,3 +69,25 @@ resource "openstack_compute_instance_v2" "nginx" {
     ignore_resize_confirmation = true
   }
 }
+
+resource "openstack_compute_instance_v2" "docker" {
+  name              = "docker"
+  flavor_id         = var.flavor_id
+  key_pair          = selectel_vpc_keypair_v2.keypair_1.name
+  availability_zone = var.availability_zone
+
+  network {
+    port = openstack_networking_port_v2.port_docker.id
+  }
+
+  block_device {
+    uuid             = openstack_blockstorage_volume_v3.volume_7.id
+    source_type      = "volume"
+    destination_type = "volume"
+    boot_index       = 0
+  }
+
+  vendor_options {
+    ignore_resize_confirmation = true
+  }
+}

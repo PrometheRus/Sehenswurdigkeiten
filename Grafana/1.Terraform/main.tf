@@ -18,25 +18,6 @@ provider "selectel" {
   password    = var.service-account-main-password
 }
 
-# # Create a service account for a Selectel
-# resource "selectel_iam_serviceuser_v1" "serviceuser_selectel" {
-#   name     = var.service-account-main-name
-#   password = var.service-account-main-password
-#   role {
-#     role_name  = "member"
-#     scope      = "project"
-#     project_id = selectel_vpc_project_v2.project_1.id
-#   }
-#   role {
-#     role_name  = "member"
-#     scope      = "account"
-#   }
-#   role {
-#     role_name  = "iam_admin"
-#     scope      = "account"
-#   }
-# }
-
 # Init OpenStack provider
 provider "openstack" {
   auth_url    = "https://cloud.api.selcloud.ru/identity/v3"
