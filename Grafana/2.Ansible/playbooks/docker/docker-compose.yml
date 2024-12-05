@@ -5,6 +5,9 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
+    networks:
+      - prometheus
+      - cadvisor
 
   grafana:
     image: grafana/grafana
@@ -12,16 +15,22 @@ services:
       - ./grafana.yml:/etc/grafana/provisioning/datasources/grafana.yml
     ports:
       - "3000:3000"
+    networks:
+      - grafana
+      - prometheus
+
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor
     volumes:
       - /:/rootfs:ro
-      - /var/run:/var/run:rw
+      - /var/run:/var/run:ro
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
     ports:
       - "8080:8080"
+    networks:
+      - cadvisor
 
   lb:
     image: nginx
@@ -31,6 +40,8 @@ services:
       - "8888:8888"
     depends_on:
       - nginx
+    networks:
+      - web
 
   nginx:
     image: nginx
@@ -41,6 +52,22 @@ services:
       mode: replicated
       replicas: 3
     networks:
-      default:
-        aliases:
-          - web
+      - web
+
+networks:
+  grafana:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "br@grafana"
+  prometheus:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "br@prometheus"
+  web:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "br@web"
+  cadvisor:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: "br@cadvisor"
