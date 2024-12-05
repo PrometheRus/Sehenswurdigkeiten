@@ -108,6 +108,11 @@ rm -f ./root_config
 
 ## 3. Docker-compose:
 В пунктах 1.2 и 2 Терраформ уже развернул машину **docker**, ansible перекинул файлы, и установил пакеты. Дополнительные действия по подготовке не требуются.
+### Сетевая изоляция контейнеров (4 подсети):
+1. `grafana` в подсети с `prometheus` (br@grafana + br@prometheus)
+2. `cadvisor` в подсети с `prometheus` (br@cadvisor + br@prometheus)
+3. `lb` & `nginx-{1..3}` в отдельной подсети (br@web)
+
 
 1. Заходим по **ssh** на машину ``<public_ip_address_docker>`` и запускаем:
 ```

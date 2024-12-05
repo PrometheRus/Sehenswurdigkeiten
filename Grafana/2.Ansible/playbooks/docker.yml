@@ -1,7 +1,7 @@
 ---
 - name: Prepare everything for running docker-compose
   gather_facts: false
-  hosts: docker_group
+  hosts: docker
 
   tasks:
     - name: Copy files
@@ -10,15 +10,15 @@
         dest: "/root/"
         mode: '0644'
       with_items:
-        - ./templates/custom.conf
-        - ./templates/docker-compose.yml
-        - ./templates/grafana.yml
-        - ./templates/lb.conf
-        - ./templates/prometheus.yml
+        - ./docker/custom.conf
+        - ./docker/docker-compose.yml
+        - ./docker/grafana.yml
+        - ./docker/lb.conf
+        - ./docker/prometheus.yml
 
     - name: Copy file for Docker's apt repository.
       ansible.builtin.copy:
-        src: ./templates/docker.list
+        src: ./docker/docker.list
         dest: /etc/apt/sources.list.d/docker.list
         mode: '0644'
 
@@ -32,6 +32,12 @@
         - containerd.io
         - docker-buildx-plugin
         - docker-compose-plugin
+        -
+    - name: Copy file for Docker's daemon.json to enable metrics-addr
+      ansible.builtin.copy:
+        src: ./docker/daemon.json
+        dest: /etc/docker/daemon.json
+        mode: '0644'
 
     # Iptables block
     - name: Allow all 192.168.199.0/24 traffic
