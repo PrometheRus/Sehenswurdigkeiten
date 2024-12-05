@@ -61,7 +61,7 @@ rm -f ./root_config
 ### Как поднять контейнеры:
 1. Заходим по **ssh** на машину ``<public_ip_address_docker>`` и запускаем:
 ```
-docker compose -p demo up
+docker compose -p demo up -d
 ...
 
 # Проверяем, что все "бегит"
