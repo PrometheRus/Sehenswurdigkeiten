@@ -1,71 +1,20 @@
 # Grafana + Prometheus + Node exporter на **Ubuntu 24.04 LTS**
 ## 1.1. Manual deployment (openstack cli)
+Развернул аналогично задаче по [Galera Cluster](https://github.com/PrometheRus/Sehenswurdigkeiten/tree/main/Galera#11-manual-deployment-openstack-cli) (только без балансировщика), каких то особых нюансов нет. Дублировать информацию не вижу целесообразным.
 
-### Предварительные условия:
-1. Подготовить локально openstack cli (по [инструкции](https://docs.selectel.ru/en/cloud/servers/tools/openstack/))
-2. Создать сервисный аккаунт с ролями (по инструкции):
-   1. Администратор аккаунта
-   2. Администратор проекта ```<project-name>```
-   3. Администратор пользователей
-
-### Шаги выполнения:
-```
-#!/bin/bash
-
-# Create net + subnet + router + ports
-openstack network create network_1
-openstack subnet create subnet_1 --network network_1 --subnet-range 192.168.199.0/24
-openstack router create router_1
-openstack router set router_1 --external-gateway external-network
-openstack router add subnet router_1 subnet_1
-for val in {1..3}; do openstack port create -q --network network_1 --fixed-ip subnet=subnet_1,ip-address=192.168.199.4${val} port${val}; done
-openstack floating ip create -q external-network --port port1
-
-# Create 3 volumes
-image="b671a80e-9bf0-4861-9833-bd711bd8a02f" # Ubuntu 24.04
-for val in {1..3}; do openstack volume create -q --image ${image} --size 10 --type basic.ru-9a --availability-zone ru-9a boot-volume-${val}; done
-
-# Create 3 VMs
-ssh-keygen -t ed25519 -f "$HOME/.ssh/virt" -q -N ""
-openstack keypair create --public-key "$HOME/.ssh/virt" keypair_1
-
-flavor='1012'
-for val in {1..3}; do
-  openstack server create server_"${val}" \
-  --flavor ${flavor} \
-  --volume boot-volume-"${val}" \
-  --port port"${val}" \
-  --key-name keypair_1 \
-  --availability-zone ru-9a;
-done
-```
 ## 1.2 Automatic deployment (Terraform):
 ### Предварительные шаги:
-1. Подготовить локально Terraform (по [инструкции](https://docs.selectel.ru/terraform/quickstart/))
-2. Создать сервисный аккаунт с ролями (по инструкции):
-   1. Администратор аккаунта
-   2. Администратор проекта ```<project-name>```
-   3. Администратор пользователей
-4. Указать переменные **своими** значениями в файле `./1.Terraform/_vars.tf`
-   + selectel-domain
-   + selectel-project-id
-   + service-account-main-name
-   + service-account-main-password
-   + service-account-main-id
-5. Сгенерировать ssh-ключ, который будет использоваться для доступа к виртуальным машинам:
-   ```
-   ssh-keyen -t ed25519 -f ~/.ssh/virt
-   ```
+1. Аналогично задаче по [Galera Cluster](https://github.com/PrometheRus/Sehenswurdigkeiten/tree/main/Galera#предварительные-шаги) 
 
 ### Шаги выполнения:
-1. Развернуть окружение:
-    ```
+   ```
    git clone git@github.com:PrometheRus/Sehenswurdigkeiten.git
    cd Sehenswurdigkeiten/Grafana/1.Terraform/
    terraform fmt && terraform validate
    terraform plan
    terraform apply
-    ```
+   ```
+    
 **После** выполнения будут созданы 4 ВМ. В выводе команды будут указаные приватные (4 шт) и публичные (2 шт) адреса машин.
 
 ## 2. Provisioning (настройка кластера через Ansible):
@@ -76,7 +25,7 @@ done
    ```
    cd Sehenswurdigkeiten/Grafana/2.Ansible/ 
    ```
-3. 3 приватные адреса и 1 публичный адрес ручками добавить в  ```hosts.ini```
+3. 3 приватные адреса и 2 публичные адреса ручками добавить в  ```hosts.ini```
    ```
    vi hosts.init
    ```
@@ -88,7 +37,7 @@ Host *
  StrictHostKeyChecking no
 EOF
 chmod 600 root_config
-bastion_ip={{ REPLACE ME}}
+bastion_ip={{ REPLACE ME }}
 rsync ~/.ssh/virt root@"${bastion_ip}":/root/.ssh
 rsync ./root_config root@"${bastion_ip}":/root/.ssh/config
 rm -f ./root_config
@@ -107,13 +56,9 @@ rm -f ./root_config
 ### Моя графана доступна по [ссылке](http://87.228.27.130:3000/d/rYdddlPWk/node-exporter-full). Креды: **viewer:viewer**, доступ из под 188.93.16.0/22 (могу открыть еще при необходимости)
 
 ## 3. Docker-compose:
-В пунктах 1.2 и 2 Терраформ уже развернул машину **docker**, ansible перекинул файлы, и установил пакеты. Дополнительные действия по подготовке не требуются.
-### Сетевая изоляция контейнеров (4 подсети):
-1. `grafana` в подсети с `prometheus` (br@grafana + br@prometheus)
-2. `cadvisor` в подсети с `prometheus` (br@cadvisor + br@prometheus)
-3. `lb` & `nginx-{1..3}` в отдельной подсети (br@web)
+В пунктах **1.2** и **2** Терраформ уже развернул машину **docker**, ansible перекинул файлы, и установил пакеты. Дополнительные действия по подготовке не требуются.
 
-
+### Как поднять контейнеры:
 1. Заходим по **ssh** на машину ``<public_ip_address_docker>`` и запускаем:
 ```
 docker compose -p demo up
@@ -132,6 +77,19 @@ demo-prometheus-1   prom/prometheus            "/bin/prometheus --c…"   promet
 ```
 2. Проверяем в браузере по ``<public_ip_address_docker>:3000``, что Grafana поднялась
 3. Импортируем ручками дашборд **14282**
+
+### По итогу развернуты контейнеры:
+1. prometheus
+2. grafana
+3. cadvisor
+4. lb + 3 nginx (это "отсебятина", чтобы наполнить графики).
+
+### Сетевая изоляция контейнеров (4 подсети):
+1. grafana в подсети с prometheus
+2. cadvisor в подсети с prometheus
+3. lb & nginx-{1..3} в отдельной подсети
+
+### Изоляция контейнеров на уровне user namespace НЕ реализована, так как cadvisor должен иметь доступ к хостовому namespoce. Как это обойти, используя Docker Compose, я не нашел решения.
 
 **Результат: доступен дашборд с системными метриками с возможностью выбора из 7ми контейнеров**
 ![img_2.png](img_2.png)
