@@ -1,11 +1,11 @@
 variable "selectel-domain" {
-  default     = "{{ REPLACE ME }}"
+  default     = "390181"
   type        = string
   description = "The id of the user account"
 }
 
 variable "selectel-project-id" {
-  default     = "{{ REPLACE ME }}"
+  default     = "a683622198f142a691482d69a604efa9"
   type        = string
   description = "The id of the project"
 }
@@ -13,19 +13,19 @@ variable "selectel-project-id" {
 
 ### The service account is already created. Using its data
 variable "service-account-main-name" {
-  default     = "{{ REPLACE ME }}"
+  default     = "service-account-grafana"
   type        = string
   description = "The name of the service account"
 }
 
 variable "service-account-main-password" {
-  default     = "{{ REPLACE ME }}"
+  default     = "K_3B>W?f"
   type        = string
   description = "The password of the service account"
 }
 
 variable "service-account-main-id" {
-  default     = "{{ REPLACE ME }}"
+  default     = "92913644bb514b0a9e0b678c9eafb7a1"
   type        = string
   description = "The ID of the service account"
 }

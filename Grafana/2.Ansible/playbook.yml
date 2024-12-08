@@ -13,3 +13,6 @@
 
 - name: Deploy docker
   ansible.builtin.import_playbook: ./playbooks/docker.yml
+
+- name: Iptables
+  ansible.builtin.import_playbook: ./playbooks/iptables.yml

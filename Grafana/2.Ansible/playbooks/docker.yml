@@ -43,35 +43,3 @@
         src: ./docker/daemon.json
         dest: /etc/docker/daemon.json
         mode: '0644'
-
-    # Iptables block
-    - name: Allow all 192.168.199.0/24 traffic
-      ansible.builtin.iptables:
-        in_interface: eth0
-        chain: INPUT
-        source: 192.168.199.0/24
-        jump: ACCEPT
-        action: insert
-
-    - name: Allow 188.93.16.0/22 subnet
-      ansible.builtin.iptables:
-        in_interface: eth0
-        chain: INPUT
-        source: 188.93.16.0/22
-        jump: ACCEPT
-        action: insert
-
-    - name: Allow related and established connections
-      ansible.builtin.iptables:
-        in_interface: eth0
-        chain: INPUT
-        ctstate: ESTABLISHED,RELATED
-        jump: ACCEPT
-        action: insert
-
-    - name: Prohibit everything else
-      ansible.builtin.iptables:
-        in_interface: eth0
-        chain: INPUT
-        reject_with: icmp-host-prohibited
-        action: append
