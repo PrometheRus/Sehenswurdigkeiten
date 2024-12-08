@@ -101,11 +101,11 @@ Change: 9486709dc5e6f156dc5beb051f1861ea362ae10c Revert "Install simplejson in d
 OS Version: Ubuntu 24.04 noble
 
 
-INST_IP=10.0.0.37
+INST_IP=10.0.0.57
 scp -O test_server.bin cirros@${INST_IP}:
 ssh -f cirros@${INST_IP} ./test_server.bin -id ${INST_IP}
 
-INST_IP=10.0.0.16
+INST_IP=10.0.0.46
 scp -O test_server.bin cirros@${INST_IP}:
 ssh -f cirros@${INST_IP} ./test_server.bin -id ${INST_IP}
 

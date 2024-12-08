@@ -1,15 +1,36 @@
-output "private_ip_address_devstack_1" {
-  value = openstack_compute_instance_v2.devstack_server_1.access_ip_v4
+output "private_ip_address_192_168_100_0_devstack_1" {
+  value = openstack_networking_port_v2.port_1_devstack_server_1.fixed_ip[0].ip_address
+}
+
+output "private_ip_address_192_168_200_0_devstack_1" {
+  value = openstack_networking_port_v2.port_2_devstack_server_1.fixed_ip[0].ip_address
 }
 
 output "public_ip_address_devstack_1" {
   value = openstack_networking_floatingip_v2.floatingip_devstack_server_1.address
 }
 
-output "private_ip_address_devstack_2" {
-  value = openstack_compute_instance_v2.devstack_server_2.access_ip_v4
+
+output "private_ip_address_192_168_100_0_devstack_2" {
+  value = openstack_networking_port_v2.port_1_devstack_server_2.fixed_ip[0].ip_address
+}
+
+output "private_ip_address_192_168_200_0_devstack_2" {
+  value = openstack_networking_port_v2.port_2_devstack_server_2.fixed_ip[0].ip_address
 }
 
 output "public_ip_address_devstack_2" {
   value = openstack_networking_floatingip_v2.floatingip_devstack_server_2.address
+}
+
+output "private_ip_address_192_168_100_0_devstack_3" {
+  value = openstack_networking_port_v2.port_1_devstack_server_3.fixed_ip[0].ip_address
+}
+
+output "private_ip_address_192_168_200_0_devstack_3" {
+  value = openstack_networking_port_v2.port_2_devstack_server_3.fixed_ip[0].ip_address
+}
+
+output "public_ip_address_devstack_3" {
+  value = openstack_networking_floatingip_v2.floatingip_devstack_server_3.address
 }
