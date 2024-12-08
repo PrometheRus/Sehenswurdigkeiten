@@ -28,42 +28,42 @@
   #!/bin/bash
 
   Create net + subnet + router + ports
-  penstack network create network_1
-  penstack subnet create subnet_1 --network network_1 --subnet-range 192.168.199.0/24
-  penstack router create router_1
-  penstack router set router_1 --external-gateway external-network
-  penstack router add subnet router_1 subnet_1
-  or val in {1..4}; do openstack port create -q --network network_1 --fixed-ip subnet=subnet_1,ip-address=192.168.199.4${val} port${val}; done
-  penstack floating ip create -q external-network --port port4
+  openstack network create network_1
+  openstack subnet create subnet_1 --network network_1 --subnet-range 192.168.199.0/24
+  openstack router create router_1
+  openstack router set router_1 --external-gateway external-network
+  openstack router add subnet router_1 subnet_1
+  for val in {1..4}; do openstack port create -q --network network_1 --fixed-ip subnet=subnet_1,ip-address=192.168.199.4${val} port${val}; done
+  openstack floating ip create -q external-network --port port4
     
-  Create volumes
-  mage="b671a80e-9bf0-4861-9833-bd711bd8a02f" # Ubuntu 24.04
-  or val in {1..4}; do openstack volume create -q --image ${image} --size 10 --type basic.ru-9a --availability-zone ru-9a boot-volume-${val}; done
+  # Create volumes
+  image="b671a80e-9bf0-4861-9833-bd711bd8a02f" # Ubuntu 24.04
+  for val in {1..4}; do openstack volume create -q --image ${image} --size 10 --type basic.ru-9a --availability-zone ru-9a boot-volume-${val}; done
   
-   Create VMs
-  sh-keygen -t ed25519 -f "$HOME/.ssh/virt" -q -N ""
-  penstack keypair create --public-key "$HOME/.ssh/virt" keypair_1
+  # Create VMs
+  ssh-keygen -t ed25519 -f "$HOME/.ssh/virt" -q -N ""
+  openstack keypair create --public-key "$HOME/.ssh/virt" keypair_1
   
-  lavor='1012'
-  or val in {1..4}; do
+  flavor='1012'
+  for val in {1..4}; do
    openstack server create server_"${val}" \
    --flavor ${flavor} \
    --volume boot-volume-"${val}" \
    --port port"${val}" \
    --key-name keypair_1 \
    --availability-zone ru-9a;
-  one
+  done
     
-  Create a loadbalancer
-  penstack loadbalancer create --name lb_1 --vip-address 192.168.199.45 --vip-port-id port5 --flavor AMPH1.SNGL.2-1024
-  leep 120s;
-  penstack loadbalancer listener create --name listener_1 --protocol TCP --protocol-port 3306 lb_1
-  leep 10;
-  penstack loadbalancer pool create --name pool_1 --lb-algorithm ROUND_ROBIN --listener listener_1 --protocol TCP
-  leep 10;
-  or val in {1..3}; do openstack loadbalancer member create --subnet-id subnet_1 --address 192.168.199.4${val} --protocol-port 3306 pool_1; sleep 10s; done
-  penstack floating ip create external-network --port "$(openstack port list -f value | grep 192.168.199.45 | cut -f 1 -d ' ')"
-  penstack loadbalancer healthmonitor create --delay 5 --max-retries 4 --timeout 10 --type TCP pool_1
+  # Create a loadbalancer
+  openstack loadbalancer create --name lb_1 --vip-address 192.168.199.45 --vip-port-id port5 --flavor AMPH1.SNGL.2-1024
+  sleep 120s;
+  openstack loadbalancer listener create --name listener_1 --protocol TCP --protocol-port 3306 lb_1
+  sleep 10;
+  openstack loadbalancer pool create --name pool_1 --lb-algorithm ROUND_ROBIN --listener listener_1 --protocol TCP
+  sleep 10;
+  for val in {1..3}; do openstack loadbalancer member create --subnet-id subnet_1 --address 192.168.199.4${val} --protocol-port 3306 pool_1; sleep 10s; done
+  openstack floating ip create external-network --port "$(openstack port list -f value | grep 192.168.199.45 | cut -f 1 -d ' ')"
+  openstack loadbalancer healthmonitor create --delay 5 --max-retries 4 --timeout 10 --type TCP pool_1
 
   ```
 </details>
