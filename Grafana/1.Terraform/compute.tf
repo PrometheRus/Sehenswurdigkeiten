@@ -20,10 +20,6 @@ resource "openstack_compute_instance_v2" "grafana" {
     destination_type = "volume"
     boot_index       = 0
   }
-
-  vendor_options {
-    ignore_resize_confirmation = true
-  }
 }
 
 resource "openstack_compute_instance_v2" "prometheus" {
@@ -37,14 +33,10 @@ resource "openstack_compute_instance_v2" "prometheus" {
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_3.id
+    uuid             = openstack_blockstorage_volume_v3.volume_2.id
     source_type      = "volume"
     destination_type = "volume"
     boot_index       = 0
-  }
-
-  vendor_options {
-    ignore_resize_confirmation = true
   }
 }
 
@@ -59,14 +51,10 @@ resource "openstack_compute_instance_v2" "nginx" {
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_5.id
+    uuid             = openstack_blockstorage_volume_v3.volume_3.id
     source_type      = "volume"
     destination_type = "volume"
     boot_index       = 0
-  }
-
-  vendor_options {
-    ignore_resize_confirmation = true
   }
 }
 
@@ -81,13 +69,9 @@ resource "openstack_compute_instance_v2" "docker" {
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_7.id
+    uuid             = openstack_blockstorage_volume_v3.volume_4.id
     source_type      = "volume"
     destination_type = "volume"
     boot_index       = 0
-  }
-
-  vendor_options {
-    ignore_resize_confirmation = true
   }
 }
