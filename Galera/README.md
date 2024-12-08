@@ -147,14 +147,16 @@ MariaDB [demo]> show global variables like 'wsrep_on'; # expected: OFF
 # Вносим разные записи на всех нодах (email - UNIQUE)
 
 # node 1
-MariaDB [demo]> INSERT INTO users (name, email) 
-VALUES ('node1', '1@gmail.com'), ('node1', '2@gmail.com'), ('node1', '3@gmail.com'),(22, 'node1', '5@gmail.com');
+INSERT INTO users (name, email) VALUES ('node1', '1@gmail.com'), ('node1', '2@gmail.com'), ('node1', '3@gmail.com')
+INSERT INTO users (id, name, email) VALUES (22, 'node1', '5@gmail.com');
+
 # node 2
-MariaDB [demo]> INSERT INTO users (name, email) 
-VALUES ('node2', '1@gmail.com'), ('node2', '2@gmail.com'), ('node2', '3@gmail.com'),(22, 'node2', '5@gmail.com');
+INSERT INTO users (name, email) VALUES ('node2', '1@gmail.com'), ('node2', '2@gmail.com'), ('node2', '3@gmail.com');
+INSERT INTO users (id, name, email) VALUES (22, 'node2', '5@gmail.com');
+
 # node 3
-MariaDB [demo]> INSERT INTO users (name, email) 
-VALUES ('node3', '1@gmail.com'), ('node3', '2@gmail.com'), ('node3', '3@gmail.com'),(22, 'node3', '5@gmail.com');
+INSERT INTO users (name, email) VALUES ('node3', '1@gmail.com'), ('node3', '2@gmail.com'), ('node3', '3@gmail.com');
+INSERT INTO users (id, name, email) VALUES (22, 'node3', '5@gmail.com');
 ```
 ```
 # Возвращаем репликацию
