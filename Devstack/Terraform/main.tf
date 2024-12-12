@@ -17,7 +17,7 @@ provider "selectel" {
   domain_name = var.domain
   username    = var.service-account-name
   password    = var.service-account-password
-  auth_region = "ru-9"
+  auth_region = var.auth_region
 }
 
 # Init OpenStack provider
@@ -27,5 +27,5 @@ provider "openstack" {
   tenant_id   = var.project-id
   user_name   = var.service-account-name
   password    = var.service-account-password
-  region      = "ru-9"
+  region      = var.auth_region
 }

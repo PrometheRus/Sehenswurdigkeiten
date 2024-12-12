@@ -1,6 +1,6 @@
 resource "openstack_networking_network_v2" "network_devstack" {
   name           = "private-network"
-  admin_state_up = "true"
+  admin_state_up = true
 }
 
 
@@ -9,6 +9,7 @@ resource "openstack_networking_subnet_v2" "subnet_devstack_1" {
   network_id  = openstack_networking_network_v2.network_devstack.id
   cidr        = "192.168.11.0/25"
   enable_dhcp = false
+  dns_nameservers = [ "188.93.16.19", "188.93.17.19" ]
 }
 
 resource "openstack_networking_subnet_v2" "subnet_devstack_2" {
@@ -16,6 +17,7 @@ resource "openstack_networking_subnet_v2" "subnet_devstack_2" {
   network_id  = openstack_networking_network_v2.network_devstack.id
   cidr        = "192.168.12.0/25"
   enable_dhcp = false
+  dns_nameservers = [ "188.93.16.19", "188.93.17.19" ]
 }
 
 data "openstack_networking_network_v2" "external_network_devstack" {
@@ -23,7 +25,7 @@ data "openstack_networking_network_v2" "external_network_devstack" {
 }
 
 resource "openstack_networking_router_v2" "router_devstack" {
-  name                = "router"
+  name                = "router1"
   external_network_id = data.openstack_networking_network_v2.external_network_devstack.id
 }
 

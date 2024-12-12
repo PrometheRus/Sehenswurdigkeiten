@@ -9,6 +9,7 @@ resource "openstack_compute_instance_v2" "devstack_server_1" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
+  user_data = file("./metadata/init.yml")
 
   network {
     port = openstack_networking_port_v2.port_1_devstack_server_1.id
@@ -19,14 +20,12 @@ resource "openstack_compute_instance_v2" "devstack_server_1" {
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_devstack_server_1.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
-  }
-
-  vendor_options {
-    ignore_resize_confirmation = true
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }
 
@@ -35,6 +34,7 @@ resource "openstack_compute_instance_v2" "devstack_server_2" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
+  user_data = file("./metadata/init.yml")
 
   network {
     port = openstack_networking_port_v2.port_1_devstack_server_2.id
@@ -45,15 +45,20 @@ resource "openstack_compute_instance_v2" "devstack_server_2" {
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_devstack_server_2.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 
-  vendor_options {
-    ignore_resize_confirmation = true
-  }
+  # block_device {
+  #   uuid             = openstack_blockstorage_volume_v3.volume_devstack_server_2.id
+  #   source_type      = "volume"
+  #   destination_type = "volume"
+  #   boot_index       = 0
+  # }
 }
 
 resource "openstack_compute_instance_v2" "devstack_server_3" {
@@ -61,6 +66,7 @@ resource "openstack_compute_instance_v2" "devstack_server_3" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
+  user_data = file("./metadata/init.yml")
 
   network {
     port = openstack_networking_port_v2.port_1_devstack_server_3.id
@@ -71,14 +77,12 @@ resource "openstack_compute_instance_v2" "devstack_server_3" {
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_devstack_server_3.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
-  }
-
-  vendor_options {
-    ignore_resize_confirmation = true
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }
 

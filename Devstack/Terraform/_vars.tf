@@ -5,7 +5,7 @@ variable "domain" {
 }
 
 variable "project-id" {
-  default     = "bb2c1791cfed417e94a98e89495222f5"
+  default     = "ae2094c5b4a5418aaf772c6864d5dd8e"
   type        = string
   description = "The id of the project"
 }
@@ -18,13 +18,13 @@ variable "service-account-name" {
 }
 
 variable "service-account-password" {
-  default     = "bDIUt6Tf"
+  default     = "ySU-M5z-4QT-gnA"
   type        = string
   description = "The password of the service account"
 }
 
 variable "service-account-id" {
-  default     = "c9f5932035c746798c863fabc650d427"
+  default     = "3cbed56cc632433e8f14580f76312a8c"
   type        = string
   description = "The ID of the service account"
 }
@@ -36,7 +36,7 @@ variable "flavor_id" {
 }
 
 variable "image_id" {
-  default     = "b671a80e-9bf0-4861-9833-bd711bd8a02f" # Ubuntu 24.04
+  default     = "047ec8d7-8a53-4ffb-b7da-e065da7ed97f" # Ubuntu 24.04
   type        = string
   description = "The ID of the image to use"
 }
@@ -57,4 +57,10 @@ variable "volume_size" {
   default     = "20"
   type        = string
   description = "The volume size to use"
+}
+
+variable "auth_region" {
+  default     = "ru-9"
+  type        = string
+  description = "The availability auth zone to use == availability_zone"
 }
