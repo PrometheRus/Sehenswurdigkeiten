@@ -36,7 +36,7 @@ variable "flavor_id" {
 }
 
 variable "image_id" {
-  default     = "047ec8d7-8a53-4ffb-b7da-e065da7ed97f" # Ubuntu 24.04
+  default     = "3d235525-fe04-454c-a598-1ee6d9d1f2c6" # Ubuntu 24.04
   type        = string
   description = "The ID of the image to use"
 }

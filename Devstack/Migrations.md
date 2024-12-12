@@ -1,17 +1,5 @@
 # Migrations
 
-### Обнаружить (discover) compute хосты в БД Nova:
-```commandline
-stack@devstack-2:~/devstack$ nova-manage cell_v2 discover_hosts --verbose
-stack@devstack-3:~/devstack$ openstack hypervisor list
-+--------------------------------------+---------------------+-----------------+---------------+-------+
-| ID                                   | Hypervisor Hostname | Hypervisor Type | Host IP       | State |
-+--------------------------------------+---------------------+-----------------+---------------+-------+
-| f466cc18-8e7e-48cc-a67c-835c0320b90c | devstack-2          | QEMU            | 192.168.12.20 | up    |
-| 573e906a-544e-4c82-acec-c443dbd72a8b | devstack-1          | QEMU            | 192.168.12.10 | up    |
-| 00a23759-1e33-4eb4-bb61-d51f2e46e161 | devstack-3          | QEMU            | 192.168.12.30 | up    |
-+--------------------------------------+---------------------+-----------------+---------------+-------+
-```
 ### ВМ ``instance1`` перенесена (**Сold**) с **HV devstack-1** на -> **HV devstack-2**:
 ```commandline
 stack@devstack-2:~$ openstack server stop instance1

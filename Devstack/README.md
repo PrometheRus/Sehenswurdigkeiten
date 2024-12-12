@@ -99,22 +99,21 @@ stack@devstack-2:~/devstack$ openstack router show router1
 +---------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```
 
-### Ожидаемый результат: ноды развернуты, все юниты devstack@*, включая Octavia, в статусе running
+### Обнаружить (discover) поднявшиеся compute хосты в БД Nova:
 ```commandline
-stack@devstack-2:~$ openstack loadbalancer list
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-| id                                   | name | project_id                       | vip_address | provisioning_status | operating_status | provider |
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-| 46eac739-0c2c-47c6-b94b-1d4b8ba1ba8e | lb1  | d9b06f241423426f95341acffe50ad5f | 10.12.0.30  | ACTIVE              | ONLINE           | amphora  |
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-stack@devstack-2:~$ openstack server list
-+--------------------------------------+-----------+--------+---------------------------------------------+--------------------------+---------+
-| ID                                   | Name      | Status | Networks                                    | Image                    | Flavor  |
-+--------------------------------------+-----------+--------+---------------------------------------------+--------------------------+---------+
-| 4d6df57d-4c7a-4481-89a8-541b1f17a528 | instance2 | ACTIVE | private=10.12.0.40, fd::f816:3eff:fe3f:91ce | cirros-0.6.3-x86_64-disk | m1.tiny |
-| 961f13d2-cb26-47cb-a760-c68f2b8aabea | instance1 | ACTIVE | private=10.12.0.33, fd::f816:3eff:fe26:d3ee | cirros-0.6.3-x86_64-disk | m1.tiny |
-+--------------------------------------+-----------+--------+---------------------------------------------+--------------------------+---------+
+stack@devstack-2:~$ nova-manage cell_v2 discover_hosts --verbose
+stack@devstack-2:~$ openstack hypervisor list
++--------------------------------------+---------------------+-----------------+---------------+-------+
+| ID                                   | Hypervisor Hostname | Hypervisor Type | Host IP       | State |
++--------------------------------------+---------------------+-----------------+---------------+-------+
+| f466cc18-8e7e-48cc-a67c-835c0320b90c | devstack-2          | QEMU            | 192.168.12.20 | up    |
+| 573e906a-544e-4c82-acec-c443dbd72a8b | devstack-1          | QEMU            | 192.168.12.10 | up    |
+| 00a23759-1e33-4eb4-bb61-d51f2e46e161 | devstack-3          | QEMU            | 192.168.12.30 | up    |
++--------------------------------------+---------------------+-----------------+---------------+-------+
 ```
+
+### Ожидаемый результат: ноды развернуты, все юниты devstack@*, включая Octavia, в статусе running
+
 ```commandline
 stack@devstack-2:~$ systemctl list-units | grep 'Devstack devstack@*'
   devstack@c-api.service                                                                       loaded active running   Devstack devstack@c-api.service
@@ -139,7 +138,6 @@ stack@devstack-2:~$ systemctl list-units | grep 'Devstack devstack@*'
   devstack@placement-api.service                                                               loaded active running   Devstack devstack@placement-api.service
   devstack@q-ovn-metadata-agent.service                                                        loaded active running   Devstack devstack@q-ovn-metadata-agent.service
   devstack@q-svc.service                                                                       loaded active running   Devstack devstack@q-svc.service
-
 ```
 
 #### Если сделали ребут и нужно поднять линки:
