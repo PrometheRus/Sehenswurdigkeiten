@@ -1,4 +1,13 @@
-# Devstack: Controller (all in one) Node + 2 Compute Nodes
+# Devstack: Controller Node + 2 Compute Nodes
+
+### Ожидаемый результат: 
+1. ноды развернуты
+   + devstack-1 (compute)
+   + devstack-2 (controller + octavia)
+   + devstack-3 (compute)
+2. все сервисы devstack@*, включая Octavia, в статусе running
+
+## Шаги выполнения:
 1. Подготовить 3 ВМ через terraform:
 ```commandline
 cd Terraform
@@ -101,7 +110,11 @@ stack@devstack-2:~/devstack$ openstack router show router1
 
 ### Обнаружить (discover) поднявшиеся compute хосты в БД Nova:
 ```commandline
-stack@devstack-2:~$ nova-manage cell_v2 discover_hosts --verbose
+stack@devstack-2:~$ nova-manage cell_v2 discover_hosts
+```
+
+### Фактический результат: ноды развернуты, все сервисы devstack@*, включая Octavia, в статусе running
+```commandline
 stack@devstack-2:~$ openstack hypervisor list
 +--------------------------------------+---------------------+-----------------+---------------+-------+
 | ID                                   | Hypervisor Hostname | Hypervisor Type | Host IP       | State |
@@ -111,8 +124,6 @@ stack@devstack-2:~$ openstack hypervisor list
 | 00a23759-1e33-4eb4-bb61-d51f2e46e161 | devstack-3          | QEMU            | 192.168.12.30 | up    |
 +--------------------------------------+---------------------+-----------------+---------------+-------+
 ```
-
-### Ожидаемый результат: ноды развернуты, все юниты devstack@*, включая Octavia, в статусе running
 
 ```commandline
 stack@devstack-2:~$ systemctl list-units | grep 'Devstack devstack@*'
@@ -147,3 +158,5 @@ ip a add 192.168.12.10/25 dev br-ex; ip l set up br-ex; ip l set up br-int  # No
 ip a add 192.168.12.20/25 dev br-ex; ip l set up br-ex; ip l set up br-int  # Node2
 ip a add 192.168.12.30/25 dev br-ex; ip l set up br-ex; ip l set up br-int  # Node3
 ```
+
+# Далее переходи к файлу Octavia.md

@@ -29,20 +29,28 @@ openstack loadbalancer member create --wait --subnet-id private-subnet --address
 openstack loadbalancer member create --wait --subnet-id private-subnet --address {{ REPLACE ME }} --protocol-port 8080 pool1
 ```
 
-#### Проверяем, что ЛБ с одной амфорой создан:
+#### Проверяем, что 2 инстанса и ЛБ с одной амфорой созданы:
 ```commandline
-stack@devstack-2:~$ openstack loadbalancer list
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-| id                                   | name | project_id                       | vip_address | provisioning_status | operating_status | provider |
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-| 46eac739-0c2c-47c6-b94b-1d4b8ba1ba8e | lb1  | d9b06f241423426f95341acffe50ad5f | 10.12.0.30  | ACTIVE              | ONLINE           | amphora  |
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-stack@devstack-2:~$ openstack server list
+stack@devstack-2:~/devstack$ openstack loadbalancer list
++---------------------+------+---------------------+-------------+---------------------+------------------+----------+
+| id                  | name | project_id          | vip_address | provisioning_status | operating_status | provider |
++---------------------+------+---------------------+-------------+---------------------+------------------+----------+
+| b93a3252-d1de-4c63- | lb1  | ef517dbbcb24451e931 | 10.12.0.52  | ACTIVE              | ONLINE           | amphora  |
+| 935e-5ccefa1a6505   |      | 401b712603680       |             |                     |                  |          |
++---------------------+------+---------------------+-------------+---------------------+------------------+----------+
+stack@devstack-2:~/devstack$ openstack loadbalancer amphora list
++---------------------------------+----------------------------------+-----------+------------+---------------+------------+
+| id                              | loadbalancer_id                  | status    | role       | lb_network_ip | ha_ip      |
++---------------------------------+----------------------------------+-----------+------------+---------------+------------+
+| ebbf3141-1a35-4cc6-82fc-        | b93a3252-d1de-4c63-935e-         | ALLOCATED | STANDALONE | 192.168.0.189 | 10.12.0.52 |
+| d4a102136b75                    | 5ccefa1a6505                     |           |            |               |            |
++---------------------------------+----------------------------------+-----------+------------+---------------+------------+
+stack@devstack-2:~/devstack$ openstack server list
 +--------------------------------------+-----------+--------+---------------------------------------------+--------------------------+---------+
 | ID                                   | Name      | Status | Networks                                    | Image                    | Flavor  |
 +--------------------------------------+-----------+--------+---------------------------------------------+--------------------------+---------+
-| 4d6df57d-4c7a-4481-89a8-541b1f17a528 | instance2 | ACTIVE | private=10.12.0.40, fd::f816:3eff:fe3f:91ce | cirros-0.6.3-x86_64-disk | m1.tiny |
-| 961f13d2-cb26-47cb-a760-c68f2b8aabea | instance1 | ACTIVE | private=10.12.0.33, fd::f816:3eff:fe26:d3ee | cirros-0.6.3-x86_64-disk | m1.tiny |
+| 614a5bc3-7a62-4595-8d20-3b00682eb0d9 | instance2 | ACTIVE | private=10.12.0.21, fd::f816:3eff:fe9b:72c5 | cirros-0.6.3-x86_64-disk | m1.tiny |
+| a1d15206-1a59-4332-ac35-fe296950ebb5 | instance1 | ACTIVE | private=10.12.0.15, fd::f816:3eff:febc:92fd | cirros-0.6.3-x86_64-disk | m1.tiny |
 +--------------------------------------+-----------+--------+---------------------------------------------+--------------------------+---------+
 ```
 
@@ -59,48 +67,12 @@ ssh -f cirros@${INST_IP} ./test_server.bin -id ${INST_IP}
 
 ### Курлык:
 ```
-stack@devstack-2:~$ openstack loadbalancer list 
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-| id                                   | name | project_id                       | vip_address | provisioning_status | operating_status | provider |
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-| 46eac739-0c2c-47c6-b94b-1d4b8ba1ba8e | lb1  | d9b06f241423426f95341acffe50ad5f | 10.12.0.30  | ACTIVE              | ONLINE           | amphora  |
-+--------------------------------------+------+----------------------------------+-------------+---------------------+------------------+----------+
-stack@devstack-2:~$ for val in {1..5}; do curl -i 10.12.0.30; sleep 3s; done
-
-HTTP/1.1 200 OK
-set-cookie: JSESSIONID=10.12.0.40
-date: Thu, 12 Dec 2024 11:05:10 GMT
-content-length: 10
-content-type: text/plain; charset=utf-8
-10.12.0.40
-
-HTTP/1.1 200 OK
-set-cookie: JSESSIONID=10.12.0.33
-date: Thu, 12 Dec 2024 11:05:14 GMT
-content-length: 10
-content-type: text/plain; charset=utf-8
-10.12.0.33
-
-HTTP/1.1 200 OK
-set-cookie: JSESSIONID=10.12.0.40
-date: Thu, 12 Dec 2024 11:05:16 GMT
-content-length: 10
-content-type: text/plain; charset=utf-8
-10.12.0.40
-
-HTTP/1.1 200 OK
-set-cookie: JSESSIONID=10.12.0.33
-date: Thu, 12 Dec 2024 11:05:20 GMT
-content-length: 10
-content-type: text/plain; charset=utf-8
-10.12.0.33
-
-HTTP/1.1 200 OK
-set-cookie: JSESSIONID=10.12.0.40
-date: Thu, 12 Dec 2024 11:05:22 GMT
-content-length: 10
-content-type: text/plain; charset=utf-8
-10.12.0.40
+stack@devstack-2:~/devstack$ for val in {1..5}; do curl -w "\n" 10.12.0.52; sleep 3s; done
+10.12.0.15
+10.12.0.21
+10.12.0.15
+10.12.0.21
+10.12.0.15
 ```
 
 ### Задание: _"Предоставлен вывод конфига haproxy из амфоры"_:
@@ -143,3 +115,5 @@ defaults
 	errorfile 503 /etc/haproxy/errors/503.http
 	errorfile 504 /etc/haproxy/errors/504.http
 ```
+
+# Далее переходи к файлу Migrations.md
