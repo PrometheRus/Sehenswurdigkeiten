@@ -13,4 +13,3 @@ runcmd:
  - [ bash, devstack/tools/create-stack-user.sh ]
  - [ mv, devstack, /opt/stack, ]
  - [ chown, -R, stack:stack, /opt/stack/devstack ]
- - [ tee, -a , /etc/hosts, <<EOF\n192.168.11.10 devstack-1\n192.168.11.20 devstack-2\n192.168.11.30 devstack-3\nEOF]

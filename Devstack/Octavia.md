@@ -79,41 +79,51 @@ stack@devstack-2:~/devstack$ for val in {1..5}; do curl -w "\n" 10.12.0.52; slee
 ```
 stack@devstack-2:~$ ssh ubuntu@192.168.0.111 -i /etc/octavia/.ssh/octavia_ssh_key
 
-ubuntu@amphora-6e1b4bb6-6ad8-4fec-b81f-cb7b07a8539a:~$ cat /etc/haproxy/haproxy.cfg 
+ubuntu@amphora-a4924049-9547-491b-820d-f8f8fb953353:~$ sudo cat /var/lib/octavia/d9d127f7-6705-4242-ae6c-73657c34bc81/haproxy.cfg
+sudo: unable to resolve host amphora-a4924049-9547-491b-820d-f8f8fb953353: Name or service not known
+# Configuration for loadbalancer d9d127f7-6705-4242-ae6c-73657c34bc81
 global
-	log /dev/log	local0
-	log /dev/log	local1 notice
-	chroot /var/lib/haproxy
-	stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
-	stats timeout 30s
-	user haproxy
-	group haproxy
-	daemon
-
-	# Default SSL material locations
-	ca-base /etc/ssl/certs
-	crt-base /etc/ssl/private
-
-	# See: https://ssl-config.mozilla.org/#server=haproxy&server-version=2.0.3&config=intermediate
-        ssl-default-bind-ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
-        ssl-default-bind-ciphersuites TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
-        ssl-default-bind-options ssl-min-ver TLSv1.2 no-tls-tickets
+    daemon
+    user nobody
+    log /run/rsyslog/octavia/log local0
+    log /run/rsyslog/octavia/log local1 notice
+    stats socket /var/lib/octavia/d9d127f7-6705-4242-ae6c-73657c34bc81.sock mode 0666 level user
+    server-state-file /var/lib/octavia/d9d127f7-6705-4242-ae6c-73657c34bc81/servers-state
+    maxconn 50000
 
 defaults
-	log	global
-	mode	http
-	option	httplog
-	option	dontlognull
-        timeout connect 5000
-        timeout client  50000
-        timeout server  50000
-	errorfile 400 /etc/haproxy/errors/400.http
-	errorfile 403 /etc/haproxy/errors/403.http
-	errorfile 408 /etc/haproxy/errors/408.http
-	errorfile 500 /etc/haproxy/errors/500.http
-	errorfile 502 /etc/haproxy/errors/502.http
-	errorfile 503 /etc/haproxy/errors/503.http
-	errorfile 504 /etc/haproxy/errors/504.http
+    log global
+    retries 3
+    option redispatch
+    option splice-request
+    option splice-response
+    option http-keep-alive
+
+
+
+
+frontend c432a800-206d-45d5-960a-b8e17006aca1
+    maxconn 50000
+    bind 10.12.0.54:80
+    mode http
+    default_backend 779af140-c82d-4f74-bb03-ce0af7e7a7ce:c432a800-206d-45d5-960a-b8e17006aca1
+    timeout client 50000
+    log-format cbe133a24341497a9b1482c15889d91c\ d9d127f7-6705-4242-ae6c-73657c34bc81\ %f\ %ci\ %cp\ %t\ %{+Q}r\ %ST\ %B\ %U\ %[ssl_c_verify]\ %{+Q}[ssl_c_s_dn]\ %b\ %s\ %Tt\ %tsc
+
+backend 779af140-c82d-4f74-bb03-ce0af7e7a7ce:c432a800-206d-45d5-960a-b8e17006aca1
+    mode http
+    http-reuse safe
+    balance roundrobin
+    load-server-state-from-file global
+    timeout check 2s
+    option httpchk GET /
+    http-check expect rstatus 200
+    fullconn 50000
+    option allbackups
+    timeout connect 5000
+    timeout server 50000
+    server 51d960b2-20e0-4859-a1ae-86f10bc2218f 10.12.0.47:8080 weight 1 check inter 5s fall 3 rise 1
+    server 775d74ad-3c97-4e8b-bc23-9923326a424e 10.12.0.8:8080 weight 1 check inter 5s fall 3 rise 1
 ```
 
 # Далее переходи к файлу Migrations.md
