@@ -78,4 +78,3 @@ resource "openstack_compute_instance_v2" "devstack_server_3" {
     delete_on_termination = true
   }
 }
-

@@ -7,6 +7,7 @@ manage_etc_hosts: false
 packages:
  - git
  - nmap
+ - jq
 
 runcmd:
  - [ git, clone, https://opendev.org/openstack/devstack ]
