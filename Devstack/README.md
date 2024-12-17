@@ -35,9 +35,11 @@ tee ~/.ssh/template_auth > /dev/null <<EOF
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID0Qs3Wltt98Hx2A+dXIPFZEAgJ38afG9BOnxeeR41Bk For using VMs
 EOF
 
+for node in $node1 $node2 $node3; do ssh root@${node} "mkdir --mode 700 /opt/stack/.ssh; chown stack:stack /opt/stack/.ssh/"; done
+
 # Send private key to root's & stack's ssh dirs
 for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/virt root@${node}:/root/.ssh/; done
-for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/virt root@"${node}":/opt/stack/.ssh/; done
+for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/virt root@${node}:/opt/stack/.ssh/; done
 
 # Send ssh config to root's & stack's ssh dir
 for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/template_config root@"${node}":/root/.ssh/config; done
