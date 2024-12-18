@@ -59,3 +59,23 @@ resource "openstack_networking_port_v2" "port_2_devstack_server_3" {
     ip_address = "192.168.12.30"
   }
 }
+
+resource "openstack_networking_port_v2" "port_1_devstack_server_nfs" {
+  name       = "port1"
+  network_id = openstack_networking_network_v2.network_devstack.id
+
+  fixed_ip {
+    subnet_id = openstack_networking_subnet_v2.subnet_devstack_1.id
+    ip_address = "192.168.11.40"
+  }
+}
+
+resource "openstack_networking_port_v2" "port_2_devstack_server_nfs" {
+  name       = "port2"
+  network_id = openstack_networking_network_v2.network_devstack.id
+
+  fixed_ip {
+    subnet_id = openstack_networking_subnet_v2.subnet_devstack_2.id
+    ip_address = "192.168.12.40"
+  }
+}
