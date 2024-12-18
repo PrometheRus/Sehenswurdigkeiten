@@ -9,16 +9,19 @@ resource "openstack_compute_instance_v2" "server_1" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
+  user_data = file("./metadata/init.yml")
 
   network {
     port = openstack_networking_port_v2.port_1.id
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_1.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }
 
@@ -27,16 +30,19 @@ resource "openstack_compute_instance_v2" "server_2" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
+  user_data = file("./metadata/init.yml")
 
   network {
     port = openstack_networking_port_v2.port_2.id
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_2.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }
 
@@ -45,16 +51,19 @@ resource "openstack_compute_instance_v2" "server_3" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
+  user_data = file("./metadata/init.yml")
 
   network {
     port = openstack_networking_port_v2.port_3.id
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_3.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }
 
@@ -70,9 +79,11 @@ resource "openstack_compute_instance_v2" "server_bastion" {
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_4.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }

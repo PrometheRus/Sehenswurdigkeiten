@@ -6,7 +6,7 @@ resource "openstack_networking_network_v2" "network_1" {
 resource "openstack_networking_subnet_v2" "subnet_1" {
   name       = "private-subnet"
   network_id = openstack_networking_network_v2.network_1.id
-  cidr       = "192.168.199.0/24"
+  cidr       = "192.168.10.0/24"
 }
 
 data "openstack_networking_network_v2" "external_network_1" {
