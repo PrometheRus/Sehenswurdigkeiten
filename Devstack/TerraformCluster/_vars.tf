@@ -1,11 +1,11 @@
 variable "domain" {
-  default     = "{{ REPLACE ME }}"
+  default     = "390181"
   type        = string
   description = "The id of the user account"
 }
 
 variable "project-id" {
-  default     = "{{ REPLACE ME }}"
+  default     = "ae2094c5b4a5418aaf772c6864d5dd8e"
   type        = string
   description = "The id of the project"
 }
@@ -18,13 +18,13 @@ variable "service-account-name" {
 }
 
 variable "service-account-password" {
-  default     = "{{ REPLACE ME }}"
+  default     = "ySU-M5z-4QT-gnA"
   type        = string
   description = "The password of the service account"
 }
 
 variable "service-account-id" {
-  default     = "{{ REPLACE ME }}"
+  default     = "3cbed56cc632433e8f14580f76312a8c"
   type        = string
   description = "The ID of the service account"
 }
@@ -36,7 +36,7 @@ variable "flavor_id" {
 }
 
 variable "image_id" {
-  default     = "3d235525-fe04-454c-a598-1ee6d9d1f2c6" # Ubuntu 24.04
+  default     = "3c4101af-4e1b-461c-ac51-2d5905ad7408" # Ubuntu 24.04
   type        = string
   description = "The ID of the image to use"
 }
