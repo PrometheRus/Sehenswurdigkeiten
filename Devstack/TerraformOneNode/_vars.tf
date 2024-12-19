@@ -1,34 +1,3 @@
-variable "domain" {
-  default     = "{{ REPLACE ME}}"
-  type        = string
-  description = "The id of the user account"
-}
-
-variable "project-id" {
-  default     = "{{ REPLACE ME}}"
-  type        = string
-  description = "The id of the project"
-}
-
-### The service account is already created. Using its data
-variable "service-account-name" {
-  default     = "{{ REPLACE ME}}"
-  type        = string
-  description = "The name of the service account"
-}
-
-variable "service-account-password" {
-  default     = "{{ REPLACE ME}}"
-  type        = string
-  description = "The password of the service account"
-}
-
-variable "service-account-id" {
-  default     = "{{ REPLACE ME}}"
-  type        = string
-  description = "The ID of the service account"
-}
-
 variable "flavor_id" {
   default     = "1014" # SL1.2-8192
   type        = string

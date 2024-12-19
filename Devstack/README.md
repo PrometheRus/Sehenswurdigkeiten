@@ -1,5 +1,41 @@
 # Devstack: Controller Node + 2 Compute Nodes
 
+```commandline
+variable "domain" {
+  default     = "{{ REPLACE ME }}"
+  type        = string
+  description = "The id of the user account"
+  sensitive   = true
+}
+
+variable "project-id" {
+  default     = "{{ REPLACE ME }}"
+  type        = string
+  description = "The id of the project"
+}
+
+variable "service-account-name" {
+  default     = "{{ REPLACE ME }}"
+  type        = string
+  description = "The name of the service account"
+  sensitive   = true
+}
+
+variable "service-account-password" {
+  default     = "{{ REPLACE ME }}"
+  type        = string
+  description = "The password of the service account"
+  sensitive   = true
+}
+
+variable "service-account-id" {
+  default     = "{{ REPLACE ME }}"
+  type        = string
+  description = "The ID of the service account"
+  sensitive   = true
+}
+```
+
 ### Ожидаемый результат: 
 1. ноды развернуты
    + devstack-1 (compute)
