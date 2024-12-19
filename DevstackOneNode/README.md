@@ -49,7 +49,7 @@
 ## Шаги выполнения:
 1. Подготовить 1 ВМ через terraform:
 ```commandline
-cd TerraformOneONde
+cd Terraform
 terraform fmt && terraform validate
 terraform plan
 terraform apply
@@ -57,17 +57,13 @@ terraform apply
 
 2. **Локально** запустить с предварительной заменой значений в переменных ``{{ ... }}``:
 ```commandline
-# Assign node's IP (look at the terraform's output)
-node="{{ REPLACE ME NODE1 IP }}"
+node="{{ REPLACE ME NODE IP }}"
 
-### Send local.conf to a VM
 rsync -ahpP ./metadata/local.conf root@${node}:/opt/stack/devstack/local.conf
-
-# Correct owners
 ssh root@${node} "chown stack:stack /opt/stack/devstack/local.conf"
 ```
 
-## On nodes:
+### On node:
 ```commandline
 ssh ${node}
 su - stack
@@ -77,7 +73,7 @@ screen -S devstack
 
 # crtl+a+d
 ```
-После выполнения скрипта будет потерян доступ до ноды по SSH через публичный адрес. Чтобы восстановить доступ, необходимо запустить команды через консоль в WUI, либо предварительно зайти по SSH с соседней ноды по серому адресу:
+После выполнения скрипта будет потерян доступ до ноды по SSH через публичный адрес. Чтобы восстановить доступ, необходимо запустить команды через консоль в WUI:
 ```commandline
 sudo ip route del default via 192.168.12.1
 sudo ip route add default via 192.168.11.1 dev eth0
