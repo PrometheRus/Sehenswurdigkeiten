@@ -10,7 +10,7 @@
 ## Шаги выполнения:
 1. Подготовить 3 ВМ через terraform:
 ```commandline
-cd Terraform
+cd TerraformCluster
 terraform fmt && terraform validate
 terraform plan
 terraform apply
