@@ -9,7 +9,7 @@ resource "openstack_compute_instance_v2" "server_1" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data = file("./metadata/init.yml")
+  user_data = file("./metadata/init.sh")
 
   network {
     port = openstack_networking_port_v2.port_1.id
@@ -30,7 +30,7 @@ resource "openstack_compute_instance_v2" "server_2" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data = file("./metadata/init.yml")
+  user_data = file("./metadata/init.sh")
 
   network {
     port = openstack_networking_port_v2.port_2.id
@@ -51,7 +51,7 @@ resource "openstack_compute_instance_v2" "server_3" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data = file("./metadata/init.yml")
+  user_data = file("./metadata/init.sh")
 
   network {
     port = openstack_networking_port_v2.port_3.id
@@ -72,7 +72,7 @@ resource "openstack_compute_instance_v2" "server_bastion" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  # user_data         = file("./metadata/init.yml")
+  user_data         = file("./metadata/init.sh")
 
   network {
     port = openstack_networking_port_v2.port_bastion.id

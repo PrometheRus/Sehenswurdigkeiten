@@ -2,7 +2,7 @@ resource "openstack_fw_rule_v2" "rule_1" {
   name                   = "allow-private-second"
   action                 = "allow"
   protocol               = "tcp"
-  source_ip_address      = "192.168.10.0/25"
+  source_ip_address      = "192.168.10.0/24"
   destination_ip_address = "0.0.0.0/0"
 }
 

@@ -1,11 +1,11 @@
 variable "selectel-domain" {
-  default     = "{{ REPLACE ME }}>"
+  default     = "390181"
   type        = string
   description = "The id of the user's domain"
 }
 
 variable "selectel-project-id" {
-  default     = "{{ REPLACE ME }}"
+  default     = "f3896bef86594a18bf54e8249631772b"
   type        = string
   description = "The id of the project"
 }
@@ -13,19 +13,19 @@ variable "selectel-project-id" {
 
 ### The service account is already created. Using its data
 variable "service-account-name" {
-  default     = "{{ REPLACE ME }}"
+  default     = "service-account-galera"
   type        = string
   description = "The name of the service account"
 }
 
 variable "service-account-password" {
-  default     = "{{ REPLACE ME }}"
+  default     = "So3]w5oG"
   type        = string
   description = "The password of the service account"
 }
 
 variable "service-account-id" {
-  default     = "{{ REPLACE ME }}"
+  default     = "58466c0ce21545e9abb26f8adc859923"
   type        = string
   description = "The ID of the service account"
 }
@@ -37,7 +37,7 @@ variable "flavor_id" {
 }
 
 variable "image_id" {
-  default     = "b671a80e-9bf0-4861-9833-bd711bd8a02f"    # Ubuntu 24.04
+  default     = "3c4101af-4e1b-461c-ac51-2d5905ad7408"    # Ubuntu 24.04
   type        = string
   description = "The ID of the image to use"
 }
