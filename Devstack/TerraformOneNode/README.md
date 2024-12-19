@@ -20,7 +20,7 @@ terraform apply
 node="{{ REPLACE ME NODE1 IP }}"
 
 ### Send local.conf to a VM
-rsync -ahpP ./local-conf/octavia_controller.conf root@${node}:/opt/stack/devstack/local.conf
+rsync -ahpP ./metadata/local.conf root@${node}:/opt/stack/devstack/local.conf
 
 # Correct owners
 ssh root@${node} "chown stack:stack /opt/stack/devstack/local.conf"
