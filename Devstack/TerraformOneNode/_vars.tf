@@ -1,11 +1,11 @@
 variable "domain" {
-  default     = "{{ REPLACE ME }}"
+  default     = "390181"
   type        = string
   description = "The id of the user account"
 }
 
 variable "project-id" {
-  default     = "{{ REPLACE ME }}"
+  default     = "ae2094c5b4a5418aaf772c6864d5dd8e"
   type        = string
   description = "The id of the project"
 }
@@ -18,13 +18,13 @@ variable "service-account-name" {
 }
 
 variable "service-account-password" {
-  default     = "{{ REPLACE ME }}"
+  default     = "ySU-M5z-4QT-gnA"
   type        = string
   description = "The password of the service account"
 }
 
 variable "service-account-id" {
-  default     = "{{ REPLACE ME }}"
+  default     = "3cbed56cc632433e8f14580f76312a8c"
   type        = string
   description = "The ID of the service account"
 }
