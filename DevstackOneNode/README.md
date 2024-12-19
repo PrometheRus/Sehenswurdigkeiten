@@ -1,4 +1,4 @@
-# Devstack: Controller Node + 2 Compute Nodes
+# Devstack: One Node (all in one)
 
 <details>
   <summary>Подготовь файл с секретами в ./Terraform/_secerts.tf</summary>
@@ -43,8 +43,7 @@
 
 
 ### Ожидаемый результат: 
-1. ноды развернуты
-   + devstack-1 (All in one)
+1. нода развернуты
 2. все сервисы devstack@*, ~~включая Octavia~~, в статусе running
 
 ## Шаги выполнения:
