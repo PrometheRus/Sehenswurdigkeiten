@@ -63,7 +63,6 @@ node1="{{ REPLACE ME NODE1 IP }}"
 node2="{{ REPLACE ME NODE2 IP }}"
 node3="{{ REPLACE ME NODE3 IP }}"
 
-cd ..
 tee ~/.ssh/template_config > /dev/null <<EOF
 Host *
  StrictHostKeyChecking no
@@ -96,9 +95,9 @@ rm -fv ~/.ssh/template_config ~/.ssh/template_auth
 
 
 ### Send local.conf to a VM
-rsync -ahpP ./local-conf/compute_local_1.conf root@"${node1}":/opt/stack/devstack/local.conf
-rsync -ahpP ./local-conf/octavia_controller.conf root@"${node2}":/opt/stack/devstack/local.conf
-rsync -ahpP ./local-conf/compute_local_3.conf root@"${node3}":/opt/stack/devstack/local.conf
+rsync -ahpP ./metadata/compute_local_1.conf root@"${node1}":/opt/stack/devstack/local.conf
+rsync -ahpP ./metadata/octavia_controller.conf root@"${node2}":/opt/stack/devstack/local.conf
+rsync -ahpP ./metadata/compute_local_3.conf root@"${node3}":/opt/stack/devstack/local.conf
 
 # Correct owners
 for node in $node1 $node2 $node3; do ssh root@${node} "chown stack:stack /opt/stack/devstack/local.conf"; done
