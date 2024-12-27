@@ -5,10 +5,11 @@ _Важно:``./test_server.bin`` слушает на 8080, а не на 80м п
 
 #### Правила доступа:
 ```
-openstack security group rule create default --protocol icmp
-openstack security group rule create default --protocol tcp --dst-port 22:22
-openstack security group rule create default --protocol tcp --dst-port 80:80
-openstack security group rule create default --protocol tcp --dst-port 8080:8080
+sg=$(openstack security group list --project demo -c ID -f value)
+openstack security group rule create ${sg} --protocol icmp
+openstack security group rule create ${sg} --protocol tcp --dst-port 22:22
+openstack security group rule create ${sg} --protocol tcp --dst-port 80:80
+openstack security group rule create ${sg} --protocol tcp --dst-port 8080:8080
 ```
 #### Создать 2 инстанса на разных HV:
 ```
