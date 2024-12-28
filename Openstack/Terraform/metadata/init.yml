@@ -10,4 +10,4 @@ packages:
  - jq
 
 runcmd:
- - [ ls ]
+ - [ hostnamelctl: ]
