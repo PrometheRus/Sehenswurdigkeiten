@@ -1,9 +1,10 @@
 #!/bin/bash
 
-tee hosts > /dev/null <<EOF
-31.129.56.248 cmp1
-46.148.228.94 cmp2
-31.129.56.56 public_controller
+tee -a /etc/hosts > /dev/null <<EOF
+
+192.168.11.10 controller
+192.168.11.20 cmp1
+192.168.11.30 cmp2
 EOF
 
 ### Действия выполняются руками, так как неудобно через IaC
@@ -31,6 +32,8 @@ grep -ni 'connection = mysql' /etc/keystone/keystone.conf
 vi /etc/keystone/keystone.conf +2602
 # provider = fernet
 
+su -s /bin/sh -c "keystone-manage db_sync" keystone
+
 ADMIN_PASS="26qe1IG6JrT7"
 keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
@@ -43,6 +46,8 @@ keystone-manage bootstrap --bootstrap-password "${ADMIN_PASS}" \
 
 # Apache
 grep -ni "#ServerName www.example.com:80" /etc/httpd/conf/httpd.conf
+sed -i 's/#ServerName www.example.com:80/ServerName controller/' /etc/httpd/conf/httpd.conf
+grep -ni "ServerName" /etc/httpd/conf/httpd.conf
 ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
 systemctl enable httpd.service
 systemctl start httpd.service
