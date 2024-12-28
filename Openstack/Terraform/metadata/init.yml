@@ -1,0 +1,13 @@
+#cloud-config
+
+timezone: Europe/Moscow
+
+manage_etc_hosts: false
+
+packages:
+ - git
+ - nmap
+ - jq
+
+runcmd:
+ - [ ls ]
