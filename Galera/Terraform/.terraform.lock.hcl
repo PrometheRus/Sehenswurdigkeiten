@@ -2,10 +2,10 @@
 # Manual edits may be lost in future updates.
 
 provider "registry.terraform.io/selectel/selectel" {
-  version     = "5.4.0"
-  constraints = "5.4.0"
+  version     = "6.0.1"
+  constraints = "~> 6.0.0"
   hashes = [
-    "h1:bqOEDxaQqn2xnVxGfgIx+Rpw2vFtV5l1WgqrdH0jrW4=",
+    "h1:rWSnnO6jVfbS8LT4+yEzQHE32qHrMjhdXuVPVU9yfrY=",
   ]
 }
 

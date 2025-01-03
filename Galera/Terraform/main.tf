@@ -2,7 +2,7 @@ terraform {
   required_providers {
     selectel = {
       source  = "selectel/selectel"
-      version = "5.4.0"
+      version = "~> 6.0.0"
     }
     openstack = {
       source  = "terraform-provider-openstack/openstack"
@@ -13,17 +13,19 @@ terraform {
 
 # Init selectel provider
 provider "selectel" {
-  domain_name = var.selectel-domain
+  auth_url    = "https://cloud.api.selcloud.ru/identity/v3/"
+  domain_name = var.domain
   username    = var.service-account-name
   password    = var.service-account-password
+  auth_region = var.auth_region
 }
 
 # Init OpenStack provider
 provider "openstack" {
   auth_url    = "https://cloud.api.selcloud.ru/identity/v3"
-  domain_name = var.selectel-domain
-  tenant_id   = var.selectel-project-id
+  domain_name = var.domain
+  tenant_id   = var.project-id
   user_name   = var.service-account-name
   password    = var.service-account-password
-  region      = "ru-9"
+  region      = var.auth_region
 }

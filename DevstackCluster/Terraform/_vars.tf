@@ -33,3 +33,8 @@ variable "auth_region" {
   type        = string
   description = "The availability auth zone to use == availability_zone"
 }
+
+variable "enable_resource" {
+  type    = bool
+  default = false
+}

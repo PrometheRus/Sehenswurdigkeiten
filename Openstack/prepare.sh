@@ -25,15 +25,17 @@ mysql -e "GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%';"
 
 
 # Init Keystone
-grep -ni '#connection = <None>/' /etc/keystone/keystone.conf
-sed -i "s/#connection = <None>/connection = mysql+pymysql:\/\/keystone:${MYSQL_PASS}@controller\/keystone/"
+MYSQL_PASS="LnCK43Fxg8#"
+grep -ni '#connection = <None>' /etc/keystone/keystone.conf
+sed -i "s/#connection = <None>/connection = mysql+pymysql:\/\/keystone:${MYSQL_PASS}@controller\/keystone/" /etc/keystone/keystone.conf
 grep -ni 'connection = mysql' /etc/keystone/keystone.conf
 
-vi /etc/keystone/keystone.conf +2602
 # provider = fernet
+sed -i '262i provider = fernet' /etc/keystone/keystone.conf
+grep -ni 'provider = fernet' /etc/keystone/keystone.conf
+
 
 su -s /bin/sh -c "keystone-manage db_sync" keystone
-
 ADMIN_PASS="26qe1IG6JrT7"
 keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
 keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
@@ -67,21 +69,8 @@ source admin-openrc
 
 
 # Проверка
+openstack user list
 
-# [root@keystone ~]# openstack user list
-# +----------------------------------+-------+
-# | ID                               | Name  |
-# +----------------------------------+-------+
-# | 385939446fa64b30a331d60bbc25317e | admin |
-# +----------------------------------+-------+
-# [root@keystone ~]# openstack network list
-# public endpoint for compute service not found
-# [root@keystone ~]# openstack service list
-# +----------------------------------+----------+----------+
-# | ID                               | Name     | Type     |
-# +----------------------------------+----------+----------+
-# | e90e16507c874ad0b743505583d607c0 | keystone | identity |
-# +----------------------------------+----------+----------+
 
 
 
@@ -108,3 +97,7 @@ openstack service create --name neutron --description "OpenStack Networking" net
 openstack endpoint create --region RegionOne network public http://controller:9696
 openstack endpoint create --region RegionOne network internal http://controller:9696
 openstack endpoint create --region RegionOne network admin http://controller:9696
+
+# Проверка
+openstack network list
+openstack service list

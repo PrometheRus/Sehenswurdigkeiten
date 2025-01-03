@@ -1,0 +1,1 @@
+ssh root@$(terraform output --raw public_controller)

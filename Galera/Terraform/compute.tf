@@ -9,10 +9,10 @@ resource "openstack_compute_instance_v2" "server_1" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data = file("./metadata/init.sh")
+  user_data = file("./metadata/percona_first.sh")
 
   network {
-    port = openstack_networking_port_v2.port_1.id
+    port = openstack_networking_port_v2.port_server_1.id
   }
 
   block_device {
@@ -30,10 +30,10 @@ resource "openstack_compute_instance_v2" "server_2" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data = file("./metadata/init.sh")
+  user_data = file("./metadata/percona.sh")
 
   network {
-    port = openstack_networking_port_v2.port_2.id
+    port = openstack_networking_port_v2.port_server_2.id
   }
 
   block_device {
@@ -51,10 +51,10 @@ resource "openstack_compute_instance_v2" "server_3" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data = file("./metadata/init.sh")
+  user_data = file("./metadata/percona.sh")
 
   network {
-    port = openstack_networking_port_v2.port_3.id
+    port = openstack_networking_port_v2.port_server_3.id
   }
 
   block_device {
@@ -72,7 +72,7 @@ resource "openstack_compute_instance_v2" "server_bastion" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data         = file("./metadata/init.sh")
+  user_data         = file("./metadata/bastion.sh")
 
   network {
     port = openstack_networking_port_v2.port_bastion.id

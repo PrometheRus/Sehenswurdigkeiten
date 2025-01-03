@@ -1,5 +1,5 @@
-resource "openstack_networking_port_v2" "port_1" {
-  name       = "port1"
+resource "openstack_networking_port_v2" "port_server_1" {
+  name       = "port-server-1"
   network_id = openstack_networking_network_v2.network_1.id
 
   fixed_ip {
@@ -8,8 +8,8 @@ resource "openstack_networking_port_v2" "port_1" {
   }
 }
 
-resource "openstack_networking_port_v2" "port_2" {
-  name       = "port2"
+resource "openstack_networking_port_v2" "port_server_2" {
+  name       = "port-server-2"
   network_id = openstack_networking_network_v2.network_1.id
 
   fixed_ip {
@@ -18,8 +18,8 @@ resource "openstack_networking_port_v2" "port_2" {
   }
 }
 
-resource "openstack_networking_port_v2" "port_3" {
-  name       = "port3"
+resource "openstack_networking_port_v2" "port_server_3" {
+  name       = "port-server-3"
   network_id = openstack_networking_network_v2.network_1.id
 
   fixed_ip {
@@ -29,7 +29,7 @@ resource "openstack_networking_port_v2" "port_3" {
 }
 
 resource "openstack_networking_port_v2" "port_bastion" {
-  name       = "port_bastion"
+  name       = "port-bastion"
   network_id = openstack_networking_network_v2.network_1.id
 
   fixed_ip {

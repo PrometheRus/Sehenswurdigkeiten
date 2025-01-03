@@ -5,7 +5,7 @@ variable "flavor_id" {
 }
 
 variable "image_id" {
-  default     = "39d6e457-e0d7-4e5d-ad64-261f72c86bdc" # Alma9
+  default     = "8940861e-68cc-4a63-82c5-b0fa6ce79087" # Alma9
   type        = string
   description = "The ID of the image to use"
 }
