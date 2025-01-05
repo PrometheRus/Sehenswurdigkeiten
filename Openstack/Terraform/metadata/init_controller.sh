@@ -1,6 +1,16 @@
 #!/bin/bash
 
 timedatectl set-timezone Europe/Moscow
+dnf install -y golang-github-prometheus-node-exporter
+systemctl start prometheus-node-exporter.service
+
+tee -a /etc/hosts > /dev/null <<EOF
+
+192.168.11.10 controller
+192.168.11.20 cmp1
+192.168.11.30 cmp2
+192.168.11.40 grafana
+EOF
 
 # Install Percona
 ROOT_PASS="DemoPassword134\!"
@@ -22,3 +32,8 @@ dnf install -y python3-openstackclient openstack-selinux
 
 # Install Keystone
 dnf install -y openstack-keystone httpd python3-mod_wsgi
+
+# Install RabbitMQ
+dnf install -y erlang logrotate rabbitmq-server
+systemctl start rabbitmq-server
+transport_url="transport_url = rabbit://username:password@kafkahostname:9092"

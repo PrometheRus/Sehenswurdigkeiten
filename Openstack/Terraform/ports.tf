@@ -58,8 +58,8 @@ resource "openstack_networking_port_v2" "port_2_cmp_node_2" {
   }
 }
 
-resource "openstack_networking_port_v2" "port_1_keystone" {
-  name       = "port1"
+resource "openstack_networking_port_v2" "port_1_grafana" {
+  name       = "port1_grafana"
   network_id = openstack_networking_network_v2.private_network.id
 
   fixed_ip {
@@ -68,8 +68,8 @@ resource "openstack_networking_port_v2" "port_1_keystone" {
   }
 }
 
-resource "openstack_networking_port_v2" "port_2_keystone" {
-  name       = "port2"
+resource "openstack_networking_port_v2" "port_2_grafana" {
+  name       = "port2_grafana"
   network_id = openstack_networking_network_v2.private_network.id
 
   fixed_ip {

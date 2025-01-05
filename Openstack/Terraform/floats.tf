@@ -25,11 +25,11 @@ resource "openstack_networking_floatingip_associate_v2" "association_cmp_2" {
   floating_ip = openstack_networking_floatingip_v2.floatingip_cmp2.address
 }
 
-resource "openstack_networking_floatingip_v2" "floatingip_keystone" {
+resource "openstack_networking_floatingip_v2" "floatingip_grafana" {
   pool = "external-network"
 }
 
-resource "openstack_networking_floatingip_associate_v2" "association_keystone" {
-  port_id     = openstack_networking_port_v2.port_2_keystone.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_keystone.address
+resource "openstack_networking_floatingip_associate_v2" "association_grafana" {
+  port_id     = openstack_networking_port_v2.port_2_grafana.id
+  floating_ip = openstack_networking_floatingip_v2.floatingip_grafana.address
 }
