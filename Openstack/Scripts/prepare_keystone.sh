@@ -12,7 +12,7 @@ grep -ni 'provider = fernet' /etc/keystone/keystone.conf
 
 #
 sed -i "s/#transport_url = rabbit:\/\//transport_url = rabbit:\/\/guest:guest@localhost:5672/" /etc/keystone/keystone.conf
-grep -ni '#transport_url = ' /etc/keystone/keystone.conf
+grep -ni 'transport_url = ' /etc/keystone/keystone.conf
 
 
 su -s /bin/sh -c "keystone-manage db_sync" keystone
@@ -46,4 +46,21 @@ EOF
 source admin-openrc
 
 # Проверка
+openstack domain create --description "An Example Domain" example
+openstack project create --domain default --description "Service Project" service
+openstack project create --domain default --description "Demo Project" myproject
+openstack user create --domain default --password-prompt myuser
+openstack role create myrole
+openstack role add --project myproject --user myuser myrole
 openstack user list
+openstack project list
+
+#
+unset OS_AUTH_URL OS_PASSWORD
+openstack --os-auth-url http://controller:5000/v3 \
+  --os-project-domain-name Default --os-user-domain-name Default \
+  --os-project-name admin --os-username admin token issue
+
+openstack --os-auth-url http://controller:5000/v3 \
+  --os-project-domain-name Default --os-user-domain-name Default \
+  --os-project-name myproject --os-username myuser token issue

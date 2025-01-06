@@ -5,8 +5,8 @@ resource "selectel_vpc_keypair_v2" "keypair_1" {
 }
 
 # Percona + Keystone + Neutron + Octavia + Rabbit
-resource "openstack_compute_instance_v2" "controller_1" {
-  name              = "controler1"
+resource "openstack_compute_instance_v2" "controller" {
+  name              = "controller"
   flavor_id         = 1015    # SL1.4-16384
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
@@ -30,7 +30,7 @@ resource "openstack_compute_instance_v2" "controller_1" {
   }
 }
 
-resource "openstack_compute_instance_v2" "cmp_node_1" {
+resource "openstack_compute_instance_v2" "cmp_1" {
   name              = "cmp1"
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
@@ -55,7 +55,7 @@ resource "openstack_compute_instance_v2" "cmp_node_1" {
   }
 }
 
-resource "openstack_compute_instance_v2" "cmp_node_2" {
+resource "openstack_compute_instance_v2" "cmp_2" {
   name              = "cmp2"
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
