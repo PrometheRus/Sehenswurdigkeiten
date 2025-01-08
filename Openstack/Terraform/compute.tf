@@ -13,11 +13,11 @@ resource "openstack_compute_instance_v2" "controller" {
   user_data         = file("./metadata/init_controller.sh")
 
   network {
-    port = openstack_networking_port_v2.port_1_controller_1.id
+    port = openstack_networking_port_v2.port_1_controller.id
   }
 
   network {
-    port = openstack_networking_port_v2.port_2_controller_1.id
+    port = openstack_networking_port_v2.port_2_controller.id
   }
 
   block_device {
@@ -35,14 +35,14 @@ resource "openstack_compute_instance_v2" "cmp_1" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_default.sh")
+  user_data         = file("./metadata/init_cmp.sh")
 
   network {
-    port = openstack_networking_port_v2.port_1_cmp_node_1.id
+    port = openstack_networking_port_v2.port_1_cmp1.id
   }
 
   network {
-    port = openstack_networking_port_v2.port_2_cmp_node_1.id
+    port = openstack_networking_port_v2.port_2_cmp1.id
   }
 
   block_device {
@@ -60,14 +60,14 @@ resource "openstack_compute_instance_v2" "cmp_2" {
   flavor_id         = var.flavor_id
   key_pair          = selectel_vpc_keypair_v2.keypair_1.name
   availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_default.sh")
+  user_data         = file("./metadata/init_cmp.sh")
 
   network {
-    port = openstack_networking_port_v2.port_1_cmp_node_2.id
+    port = openstack_networking_port_v2.port_1_cmp2.id
   }
 
   network {
-    port = openstack_networking_port_v2.port_2_cmp_node_2.id
+    port = openstack_networking_port_v2.port_2_cmp2.id
   }
 
   block_device {
@@ -91,8 +91,25 @@ resource "openstack_compute_instance_v2" "grafana" {
     port = openstack_networking_port_v2.port_1_grafana.id
   }
 
+  block_device {
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
+  }
+}
+
+resource "openstack_compute_instance_v2" "srv" {
+  name              = "srv"
+  flavor_id         = var.flavor_id
+  key_pair          = selectel_vpc_keypair_v2.keypair_1.name
+  availability_zone = var.availability_zone
+  user_data         = file("./metadata/init_srv.sh")
+
   network {
-    port = openstack_networking_port_v2.port_2_grafana.id
+    port = openstack_networking_port_v2.port_1_srv.id
   }
 
   block_device {
