@@ -14,7 +14,8 @@ EOF
 }
 
 prepare_packages() {
-  dnf install -qy golang-github-prometheus-node-exporter centos-release-openstack-zed
+  dnf install -qy dnf-plugins-core golang-github-prometheus-node-exporter centos-release-openstack-zed
+  dnf config-manager --set-enabled crb
   systemctl start prometheus-node-exporter.service
 
   # Install Percona
@@ -27,13 +28,19 @@ prepare_packages() {
 
   # Install Neutron
   dnf install -qy openstack-neutron openstack-neutron-ml2 openstack-neutron-openvswitch ebtables
-  systemctl start neutron-openvswitch-agent
+  systemctl enable --now neutron-openvswitch-agent
 
   # Install Nova
   dnf -qy install openstack-nova-api openstack-nova-conductor openstack-nova-novncproxy openstack-nova-scheduler
 
   # Install Placement
   dnf -qy install openstack-placement-api
+
+  # Install Openstack CLI
+  dnf install -qy python3-openstackclient openstack-selinux
+
+  # Update system packages
+  # dnf update -qy
 }
 
 prepare_etcd() {
@@ -127,17 +134,10 @@ EOF
   mysql --password="$(etcdctl get MYSQL_PASS --print-value-only)" -f < /root/prepare.sql
 }
 
-install_openstack() {
-  dnf install -qy dnf-plugins-core
-  dnf config-manager --set-enabled crb
-  dnf upgrade -qy
-  dnf install -qy python3-openstackclient openstack-selinux
-}
-
 prepare_keystone() {
   tee /etc/keystone/keystone.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@controller:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
 use_journal = true
 
 [database]
@@ -171,6 +171,7 @@ export OS_PROJECT_DOMAIN_NAME=Default
 export OS_AUTH_URL=http://controller:5000/v3
 export OS_IDENTITY_API_VERSION=3
 EOF
+
   chmod 600 /root/admin-openrc
   source /root/admin-openrc
 
@@ -184,25 +185,18 @@ EOF
   openstack project list
 }
 
-prepare_nova() {
+prepare_placement() {
   source /root/admin-openrc
 
-  # Prepare Nova
-  openstack user create --domain default --password "$(etcdctl get NOVA_PASS --print-value-only)" nova
-  openstack role add --project service --user nova admin
-  openstack service create --name nova --description "OpenStack Compute" compute
-  for val in public internal admin; do openstack endpoint create --region RegionOne compute ${val} http://controller:8774/v2.1; done
-
-  # Prepare Placement
   openstack user create --domain default --password "$(etcdctl get PLACEMENT_PASS --print-value-only)" placement
   openstack role add --project service --user placement admin
   openstack service create --name placement --description "Placement API" placement
   for val in public internal admin; do openstack endpoint create --region RegionOne placement ${val} http://controller:8778; done
 
-  # Cnfigure Placement
+    # Configure Placement
   tee /etc/placement/placement.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@controller:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
 use_journal = true
 
 [placement_database]
@@ -221,13 +215,61 @@ project_name = service
 username = placement
 password = $(etcdctl get PLACEMENT_PASS --print-value-only)
 EOF
+
+  # Решение проблемы с Placement (https://storyboard.openstack.org/#!/story/2006905)
+  tee /etc/httpd/conf.d/00-placement-api.conf> /dev/null <<EOF
+Listen 8778
+
+<VirtualHost *:8778>
+  WSGIProcessGroup placement-api
+  WSGIApplicationGroup %{GLOBAL}
+  WSGIPassAuthorization On
+  WSGIDaemonProcess placement-api processes=3 threads=1 user=placement group=placement
+  WSGIScriptAlias / /usr/bin/placement-api
+  <IfVersion >= 2.4>
+    ErrorLogFormat "%M"
+  </IfVersion>
+  ErrorLog /var/log/placement/placement-api.log
+  #SSLEngine On
+  #SSLCertificateFile ...
+  #SSLCertificateKeyFile ...
+  <Directory /usr/bin>
+    Require all denied
+    <Files "placement-api">
+      <RequireAll>
+        Require all granted
+        Require not env blockAccess
+      </RequireAll>
+    </Files>
+  </Directory>
+</VirtualHost>
+
+Alias /placement-api /usr/bin/placement-api
+<Location /placement-api>
+  SetHandler wsgi-script
+  Options +ExecCGI
+  WSGIProcessGroup placement-api
+  WSGIApplicationGroup %{GLOBAL}
+  WSGIPassAuthorization On
+</Location>
+EOF
+
   su -s /bin/sh -c "placement-manage db sync" placement
   systemctl restart httpd
+}
 
-  # Configure Nova
+prepare_nova() {
+  source /root/admin-openrc
+
+  openstack user create --domain default --password "$(etcdctl get NOVA_PASS --print-value-only)" nova
+  openstack role add --project service --user nova admin
+  openstack service create --name nova --description "OpenStack Compute" compute
+  for val in public internal admin; do openstack endpoint create --region RegionOne compute ${val} http://controller:8774/v2.1; done
+
+    # Configure Nova
   tee /etc/nova/nova.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@controller:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
 use_journal = true
 enabled_apis = osapi_compute,metadata
 my_ip = $(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1)
@@ -285,15 +327,19 @@ username = placement
 password = $(etcdctl get PLACEMENT_PASS --print-value-only)
 
 EOF
+
   su -s /bin/sh -c "nova-manage api_db sync" nova
   su -s /bin/sh -c "nova-manage cell_v2 map_cell0" nova
   su -s /bin/sh -c "nova-manage cell_v2 create_cell --name=cell1 --verbose" nova
   su -s /bin/sh -c "nova-manage db sync" nova
   su -s /bin/sh -c "nova-manage cell_v2 list_cells" nova
+
+  systemctl enable --now openstack-nova-api openstack-nova-scheduler openstack-nova-conductor openstack-nova-novncproxy
 }
 
-prepare_neutron () {
+prepare_neutron() {
   source /root/admin-openrc
+
   openstack user create --domain default --password "$(etcdctl get NEUTRON_PASS --print-value-only)" neutron
   # openstack project create service    - already created
   openstack role add --project service --user neutron admin
@@ -306,7 +352,7 @@ prepare_neutron () {
 [DEFAULT]
 core_plugin = ml2
 service_plugins = router
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@controller:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
 use_journal = true
 notify_nova_on_port_status_changes = true
 notify_nova_on_port_data_changes = true
@@ -407,21 +453,15 @@ EOF
   ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
   su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
   --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
-}
 
-finish (){
-  # Neutron
-  systemctl enable neutron-server neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent
-  systemctl start neutron-server neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent
+    # Neutron
+  systemctl enable --now neutron-server neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent
 
   # L3
-  systemctl enable neutron-l3-agent.service
-  systemctl start neutron-l3-agent.service
+  systemctl enable --now neutron-l3-agent.service
+}
 
-  # Nova
-  systemctl enable openstack-nova-api openstack-nova-scheduler openstack-nova-conductor openstack-nova-novncproxy
-  systemctl start openstack-nova-api openstack-nova-scheduler openstack-nova-conductor openstack-nova-novncproxy
-
+finish(){
   # After CMP1 & CMP2
   openstack compute service list --service nova-compute
   su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
@@ -432,8 +472,8 @@ prepare_packages
 prepare_etcd
 prepare_password
 prepare_percona
-install_openstack
 prepare_keystone
+prepare_placement
 prepare_nova
 prepare_neutron
 finish

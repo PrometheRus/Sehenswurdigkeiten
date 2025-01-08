@@ -52,7 +52,7 @@ scrape_configs:
     scrape_interval: 5s
     scrape_timeout: 5s
     static_configs:
-      - targets: [controller:9100,cmp1:9100,cmp2:9100, grafana:9100]
+      - targets: [controller:9100,cmp1:9100,cmp2:9100,grafana:9100,srv:9100]
 EOF
 
   tee /etc/grafana/provisioning/datasources/grafana.yml > /dev/null <<EOF

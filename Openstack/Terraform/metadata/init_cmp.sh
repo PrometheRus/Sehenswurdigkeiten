@@ -40,7 +40,7 @@ EOF
 }
 
 prepare_packages() {
-  dnf install -qy golang-github-prometheus-node-exporter centos-release-openstack-zed
+  dnf install -qy golang-github-prometheus-node-exporter centos-release-openstack-zed libvirt
   systemctl start prometheus-node-exporter.service
 
   # Install Neutron
@@ -54,10 +54,14 @@ prepare_packages() {
 prepare_nova () {
   tee /etc/nova/nova.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@controller:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
 enabled_apis = osapi_compute,metadata
 use_journal = true
 my_ip = $(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1)
+compute_driver=libvirt.LibvirtDriver
+
+[libvirt]
+virt_type = qemu
 
 [api_database]
 connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@controller/nova_api
@@ -124,14 +128,14 @@ username = neutron
 password = $(etcdctl get NEUTRON_PASS --print-value-only)
 
 EOF
-
+  systemctl enable --now libvirtd.service openstack-nova-compute.service
 }
 
 prepare_neutron() {
   # https://docs.openstack.org/neutron/latest/install/compute-install-option2-rdo.html
   tee /etc/neutron/neutron.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@controller:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
 use_journal = true
 
 [oslo_concurrency]
@@ -157,19 +161,13 @@ firewall_driver = openvswitch
 #firewall_driver = iptables_hybrid # TODO
 
 EOF
-}
-
-finish() {
-  systemctl enable openstack-nova-compute
-  systemctl start openstack-nova-compute
-  systemctl enable neutron-openvswitch-agent
-  systemctl start neutron-openvswitch-agent
+  systemctl enable --now neutron-openvswitch-agent
 }
 
 prepare_basic
 prepare_packages
+# Ждать, пока поднимется srv (rabbit). В будущем можно заменить на проверку курлом
+sleep 200s;
 prepare_etcd
 prepare_nova
 prepare_neutron
-sleep 100s;
-finish
