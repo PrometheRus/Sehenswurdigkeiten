@@ -61,7 +61,7 @@ my_ip = $(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1)
 compute_driver=libvirt.LibvirtDriver
 
 [libvirt]
-virt_type = qemu
+virt_type = kvm
 
 [api_database]
 connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@controller/nova_api
