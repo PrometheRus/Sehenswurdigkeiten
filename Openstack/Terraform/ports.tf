@@ -1,6 +1,6 @@
 resource "openstack_networking_port_v2" "port_1_controller" {
   name       = "controller-port-internet"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_1.id
@@ -10,7 +10,7 @@ resource "openstack_networking_port_v2" "port_1_controller" {
 
 resource "openstack_networking_port_v2" "port_2_controller" {
   name       = "controller-port-ovs"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_2.id
@@ -20,7 +20,7 @@ resource "openstack_networking_port_v2" "port_2_controller" {
 
 resource "openstack_networking_port_v2" "port_1_cmp1" {
   name       = "cmp1-port-internet"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_1.id
@@ -30,7 +30,7 @@ resource "openstack_networking_port_v2" "port_1_cmp1" {
 
 resource "openstack_networking_port_v2" "port_2_cmp1" {
   name       = "cmp1-port-ovs"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_2.id
@@ -40,7 +40,7 @@ resource "openstack_networking_port_v2" "port_2_cmp1" {
 
 resource "openstack_networking_port_v2" "port_1_cmp2" {
   name       = "cmp2-port-internet"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_1.id
@@ -50,7 +50,7 @@ resource "openstack_networking_port_v2" "port_1_cmp2" {
 
 resource "openstack_networking_port_v2" "port_2_cmp2" {
   name       = "cmp2-port-ovs"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_2.id
@@ -60,7 +60,7 @@ resource "openstack_networking_port_v2" "port_2_cmp2" {
 
 resource "openstack_networking_port_v2" "port_1_grafana" {
   name       = "grafana-port-internet"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_1.id
@@ -71,7 +71,7 @@ resource "openstack_networking_port_v2" "port_1_grafana" {
 # SRV
 resource "openstack_networking_port_v2" "port_1_srv" {
   name       = "srv-port-internet"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_1.id
@@ -81,7 +81,7 @@ resource "openstack_networking_port_v2" "port_1_srv" {
 
 resource "openstack_networking_port_v2" "port_2_srv" {
   name       = "srv-port-ovs"
-  network_id = openstack_networking_network_v2.private_network.id
+  network_id = openstack_networking_network_v2.network_openstack.id
 
   fixed_ip {
     subnet_id  = openstack_networking_subnet_v2.subnet_2.id

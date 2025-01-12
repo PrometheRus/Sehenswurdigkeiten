@@ -1,35 +1,31 @@
-resource "openstack_networking_floatingip_v2" "floatingip_devstack_server_1" {
+resource "openstack_networking_floatingip_v2" "float_controller" {
   pool = "external-network"
 }
 
-resource "openstack_networking_floatingip_associate_v2" "association_devstack_1" {
-  port_id     = openstack_networking_port_v2.port_1_devstack_server_1.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_devstack_server_1.address
-}
-
-resource "openstack_networking_floatingip_v2" "floatingip_devstack_server_2" {
+resource "openstack_networking_floatingip_v2" "float_cmp1" {
   pool = "external-network"
+  depends_on = [openstack_compute_instance_v2.cmp1]
 }
 
-resource "openstack_networking_floatingip_associate_v2" "association_devstack_2" {
-  port_id     = openstack_networking_port_v2.port_1_devstack_server_2.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_devstack_server_2.address
-}
-
-resource "openstack_networking_floatingip_v2" "floatingip_devstack_server_3" {
+resource "openstack_networking_floatingip_v2" "float_cmp2" {
   pool = "external-network"
+  depends_on = [openstack_compute_instance_v2.cmp2]
 }
 
-resource "openstack_networking_floatingip_associate_v2" "association_devstack_3" {
-  port_id     = openstack_networking_port_v2.port_1_devstack_server_3.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_devstack_server_3.address
+
+resource "openstack_networking_floatingip_associate_v2" "association_controller" {
+  port_id     = openstack_networking_port_v2.port_1_controller.id
+  floating_ip = openstack_networking_floatingip_v2.float_controller.address
 }
 
-resource "openstack_networking_floatingip_v2" "floatingip_devstack_server_nfs" {
-  pool = "external-network"
+resource "openstack_networking_floatingip_associate_v2" "association_cmp1" {
+  port_id     = openstack_networking_port_v2.port_1_cmp1.id
+  floating_ip = openstack_networking_floatingip_v2.float_cmp1.address
+  depends_on = [openstack_compute_instance_v2.cmp1]
 }
 
-resource "openstack_networking_floatingip_associate_v2" "association_devstack_nfs" {
-  port_id     = openstack_networking_port_v2.port_1_devstack_server_nfs.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_devstack_server_nfs.address
+resource "openstack_networking_floatingip_associate_v2" "association_cmp2" {
+  port_id     = openstack_networking_port_v2.port_1_cmp2.id
+  floating_ip = openstack_networking_floatingip_v2.float_cmp2.address
+  depends_on = [openstack_compute_instance_v2.cmp2]
 }
