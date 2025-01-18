@@ -42,3 +42,4 @@ terraform.rc
 **/_secrets.tf
 
 keystone_admin
+*.idea*
