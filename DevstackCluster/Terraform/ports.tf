@@ -1,4 +1,4 @@
-resource "openstack_networking_port_v2" "port_1_controller" {
+resource "openstack_networking_port_v2" "controller_1" {
   name       = "controller-port1"
   network_id = openstack_networking_network_v2.network_devstack.id
 
@@ -8,7 +8,7 @@ resource "openstack_networking_port_v2" "port_1_controller" {
   }
 }
 
-resource "openstack_networking_port_v2" "port_2_controller" {
+resource "openstack_networking_port_v2" "controller_2" {
   name       = "controller-port2"
   network_id = openstack_networking_network_v2.network_devstack.id
 

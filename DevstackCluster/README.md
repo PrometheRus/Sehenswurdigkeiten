@@ -42,8 +42,8 @@
 
 ### Ожидаемый результат: 
 1. ноды развернуты
-   + devstack-1 (compute)
-   + devstack-2 (controller + octavia)
+   + devstack-1 (controller + octavia
+   + devstack-2 (compute)
    + devstack-3 (compute)
 2. все сервисы devstack@*, включая Octavia, в статусе running
 
