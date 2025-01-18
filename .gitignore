@@ -43,4 +43,4 @@ terraform.rc
 
 keystone_admin
 *.idea*
-**/.idea*
+DevstackCluster/.idea
