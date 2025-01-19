@@ -1,5 +1,7 @@
 # Devstack: Controller Node + 2 Compute Nodes
 
+## Пока проблема с etcd.service, надо сделать отдельный сервис
+
 <details>
   <summary>Подготовь файл с секретами в ./Terraform/_secerts.tf</summary>
 
@@ -48,73 +50,20 @@
 2. все сервисы devstack@*, включая Octavia, в статусе running
 
 ## Шаги выполнения:
-1. Подготовить 3 ВМ через terraform:
+1. Запустить создание ВМ через terraform:
 ```commandline
 cd TerraformCluster
 terraform fmt && terraform validate
 terraform plan
 terraform apply
 ```
-
-2. **Локально** запустить команды с предварительной заменой значений в переменных ``{{ ... }}``:
+Отслеживать выполнение скрипта cloud-init можно через:
 ```commandline
-# Assign node's IP (look at the terraform's output)
-node1="{{ REPLACE ME NODE1 IP }}"
-node2="{{ REPLACE ME NODE2 IP }}"
-node3="{{ REPLACE ME NODE3 IP }}"
-
-tee ~/.ssh/template_config > /dev/null <<EOF
-Host *
- StrictHostKeyChecking no
- IdentityFile ~/.ssh/virt
- UserKnownHostsFile /dev/null
-EOF
-
-tee ~/.ssh/template_auth > /dev/null <<EOF
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID0Qs3Wltt98Hx2A+dXIPFZEAgJ38afG9BOnxeeR41Bk For using VMs
-EOF
-
-for node in $node1 $node2 $node3; do ssh root@${node} "mkdir --mode 700 /opt/stack/.ssh; chown stack:stack /opt/stack/.ssh/"; done
-
-# Send private key to root's & stack's ssh dirs
-for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/virt root@${node}:/root/.ssh/; done
-for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/virt root@${node}:/opt/stack/.ssh/; done
-
-# Send ssh config to root's & stack's ssh dir
-for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/template_config root@"${node}":/root/.ssh/config; done
-for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/template_config root@"${node}":/opt/stack/.ssh/config; done
-for node in $node1 $node2 $node3; do rsync -ahpP ~/.ssh/template_auth root@"${node}":/opt/stack/.ssh/authorized_keys; done
-
-# Correct modes and owners
-for node in $node1 $node2 $node3; do
-  ssh root@${node} "chmod 600 /root/.ssh/config; chown -R root:root /root/.ssh/; chown -R stack:stack /opt/stack/.ssh; chmod 700 /opt/stack/.ssh; chmod 600 /opt/stack/.ssh/config /opt/stack/.ssh/authorized_keys";
-done
-
-# Clean up after yourself
-rm -fv ~/.ssh/template_config ~/.ssh/template_auth
-
-
-### Send local.conf to a VM
-rsync -ahpP ./metadata/compute_local_1.conf root@"${node1}":/opt/stack/devstack/local.conf
-rsync -ahpP ./metadata/octavia_controller.conf root@"${node2}":/opt/stack/devstack/local.conf
-rsync -ahpP ./metadata/compute_local_3.conf root@"${node3}":/opt/stack/devstack/local.conf
-
-# Correct owners
-for node in $node1 $node2 $node3; do ssh root@${node} "chown stack:stack /opt/stack/devstack/local.conf"; done
+ssh root@$(terraform output -raw controller) "tail -f /var/log/cloud-init-output.log"
+ssh root@$(terraform output -raw cmp1) "tail -f /var/log/cloud-init-output.log"
+ssh root@$(terraform output -raw cmp2) "tail -f /var/log/cloud-init-output.log"
 ```
 
-## On nodes:
-Сначала запускаем на **Controller** ноде, затем, после окончания (~75 минут), запускаем на **Compute** нодах:
-```commandline
-ssh {{ CONTROLLER IP | COMPUTE1 IP | COMPUTE2 IP}}
-su - stack
-cd devstack
-screen -S devstack
-./stack.sh
-
-# crtl+a+d
-```
-После выполнения скрипта будет потерян доступ до ноды по SSH через публичный адрес. Чтобы восстановить доступ, необходимо запустить команды через консоль в WUI, либо предварительно зайти по SSH с соседней ноды по серому адресу:
 ```commandline
 sudo ip route del default via 192.168.12.1
 sudo ip route add default via 192.168.11.1 dev eth0
@@ -143,8 +92,11 @@ stack@devstack-2:~$ openstack hypervisor list
 +--------------------------------------+---------------------+-----------------+---------------+-------+
 ```
 
-```commandline
-stack@devstack-2:~$ systemctl list-units | grep 'Devstack devstack@*'
+<details>
+  <summary>systemctl list-units | grep 'Devstack devstack@*'</summary>
+
+  ```
+  stack@devstack-2:~$ systemctl list-units | grep 'Devstack devstack@*'
   devstack@c-api.service                                                                       loaded active running   Devstack devstack@c-api.service
   devstack@c-sch.service                                                                       loaded active running   Devstack devstack@c-sch.service
   devstack@c-vol.service                                                                       loaded active running   Devstack devstack@c-vol.service
@@ -167,7 +119,8 @@ stack@devstack-2:~$ systemctl list-units | grep 'Devstack devstack@*'
   devstack@placement-api.service                                                               loaded active running   Devstack devstack@placement-api.service
   devstack@q-ovn-metadata-agent.service                                                        loaded active running   Devstack devstack@q-ovn-metadata-agent.service
   devstack@q-svc.service                                                                       loaded active running   Devstack devstack@q-svc.service
-```
+  ```
+</details>
 
 #### Если сделали ребут и нужно поднять линки:
 ```commandline

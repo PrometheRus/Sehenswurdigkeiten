@@ -14,7 +14,7 @@ variable "flavor_ctrl" {
 
 # openstack image show 'Ubuntu 24.04 LTS 64-bit' -c id -f value
 variable "image_id" {
-  default     = "ca1d5915-62a8-40e9-b104-0801b0791ec6" # Ubuntu 24.04
+  default     = "a937a36f-12a9-4881-b219-422f3fc2cf4b"
   type        = string
   description = "The ID of the image to use"
 }
@@ -31,6 +31,12 @@ variable "availability_zone" {
   description = "The availability zone to use"
 }
 
+variable "volume_type" {
+  default     = "basicssd.ru-7a"
+  type        = string
+  description = "The volume type to use"
+}
+
 variable "volume_size" {
   default     = "20"
   type        = string
@@ -39,5 +45,6 @@ variable "volume_size" {
 
 variable "enable_resource" {
   type    = bool
-  default = false
+  default = true
+  description = "True if deploying cmp1 & cmp2"
 }

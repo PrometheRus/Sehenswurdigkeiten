@@ -1,19 +1,3 @@
-# resource "openstack_fw_rule_v2" "rule_1" {
-#   name                   = "allow-private-second"
-#   action                 = "allow"
-#   protocol               = "any"
-#   source_ip_address      = "192.168.11.0/25"
-#   destination_ip_address = "0.0.0.0/0"
-# }
-#
-# resource "openstack_fw_rule_v2" "rule_2" {
-#   name                   = "allow-private-first"
-#   action                 = "allow"
-#   protocol               = "any"
-#   source_ip_address      = "192.168.12.0/25"
-#   destination_ip_address = "0.0.0.0/0"
-# }
-
 resource "openstack_fw_rule_v2" "rule_selectel" {
   name                   = "allow-selectel"
   action                 = "allow"

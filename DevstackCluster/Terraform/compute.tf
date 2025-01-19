@@ -12,11 +12,11 @@ resource "openstack_compute_instance_v2" "controller" {
   user_data = file("./metadata/controller.sh")
 
   network {
-    port = openstack_networking_port_v2.port_1_controller.id
+    port = openstack_networking_port_v2.controller_1.id
   }
 
   network {
-    port = openstack_networking_port_v2.port_2_controller.id
+    port = openstack_networking_port_v2.controller_2.id
   }
 
   block_device {
@@ -26,6 +26,7 @@ resource "openstack_compute_instance_v2" "controller" {
     guest_format          = "ext4"
     source_type           = "image"
     volume_size           = var.volume_size
+    volume_type           = var.volume_type
     uuid                  = var.image_id
   }
 }
@@ -47,12 +48,13 @@ resource "openstack_compute_instance_v2" "cmp1" {
   }
 
   block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
     source_type           = "image"
     boot_index            = 0
     destination_type      = "volume"
     delete_on_termination = true
+    volume_size           = var.volume_size
+    volume_type           = var.volume_type
+    uuid                  = var.image_id
   }
 }
 
@@ -73,11 +75,12 @@ resource "openstack_compute_instance_v2" "cmp2" {
   }
 
   block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
     source_type           = "image"
     boot_index            = 0
     destination_type      = "volume"
     delete_on_termination = true
+    volume_size           = var.volume_size
+    volume_type           = var.volume_type
+    uuid                  = var.image_id
   }
 }
