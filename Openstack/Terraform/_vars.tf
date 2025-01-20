@@ -12,8 +12,9 @@ variable "flavor_ctrl" {
   description = "The ID of the flavor to use"
 }
 
+# openstack image show "Alma Linux 9 64-bit" -c id -f value
 variable "image_id" {
-  default     = "854fb8ce-1345-44b9-8d0a-c750dae45ab8" # Alma9
+  default     = "de41300f-f49d-4d95-a988-3fd3db1e9e4e" # Alma9
   type        = string
   description = "The ID of the image to use"
 }

@@ -38,6 +38,9 @@ prepare_packages() {
   # Install Placement
   dnf -qy install openstack-placement-api
 
+  # Install Glance
+  dnf -qy install openstack-glance
+
   # Install Octavia
   dnf -qy install openstack-octavia-api openstack-octavia-health-manager openstack-octavia-housekeeping openstack-octavia-worker python3-octavia python3-octaviaclient
 
@@ -471,9 +474,56 @@ EOF
   systemctl enable --now neutron-l3-agent.service
 }
 
+prepare_glance() {
+  openstack user create --domain default --password "$(etcdctl get GLANCE_PASS --print-value-only)" glance
+  openstack role add --project service --user glance admin
+  openstack service create --name glance --description "OpenStack Image" image
+  for val in public internal admin; do openstack endpoint create --region RegionOne image ${val} http://controller:9292; done
+  # Register quota limits (optional) (TODO)
+  tee /etc/glance/glance-api.conf > /dev/null <<EOF
+[database]
+# use_keystone_limits = True    (optional)
+connection = mysql+pymysql://glance:$(etcdctl get MYSQL_PASS --print-value-only)@controller/glance
+enabled_backends=fs:file
+
+[keystone_authtoken]
+www_authenticate_uri  = http://controller:5000
+auth_url = http://controller:5000
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+project_name = service
+username = glance
+password = "$(etcdctl get GLANCE_PASS --print-value-only)"
+
+[paste_deploy]
+flavor = keystone
+
+[glance_store]
+default_backend = fs
+
+[fs]
+filesystem_store_datadir = /var/lib/glance/images/
+
+[oslo_limit]
+auth_url = http://controller:5000
+auth_type = password
+user_domain_id = default
+username = glance
+password = "$(etcdctl get GLANCE_PASS --print-value-only)"
+system_scope = all
+endpoint_id = $(openstack endpoint list --service glance --region RegionOne --interface public -c ID -f value)
+region_name = RegionOne
+EOF
+  openstack role add --user glance --user-domain Default --system all reader
+  su -s /bin/sh -c "glance-manage db_sync" glance
+  systemctl enable --now openstack-glance-api.service
+}
+
 create_certificates_octavia() {
   git clone https://opendev.org/openstack/octavia.git
-  cd octavia/bin/
+  cd octavia/bin/ || exit
   source create_dual_intermediate_CA.sh
   sudo mkdir -p /etc/octavia/certs/private
   sudo chmod 755 /etc/octavia -R
@@ -484,14 +534,14 @@ create_certificates_octavia() {
   sudo cp -p etc/octavia/certs/client.cert-and-key.pem /etc/octavia/certs/private
 }
 
-create_sg_octavia() {
+create_sg_octavia() { # TODO
   openstack security group create lb-mgmt-sec-grp
   openstack security group rule create --protocol icmp lb-mgmt-sec-grp
   openstack security group rule create --protocol tcp --dst-port 22 lb-mgmt-sec-grp
   openstack security group rule create --protocol tcp --dst-port 9443 lb-mgmt-sec-grp
   openstack security group create lb-health-mgr-sec-grp
   openstack security group rule create --protocol udp --dst-port 5555 lb-health-mgr-sec-grp
-  openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey
+  openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey   # TODO
   sudo mkdir -m755 -p /etc/dhcp/octavia
   sudo cp octavia/etc/dhcp/dhclient.conf /etc/dhcp/octavia
 }
@@ -518,9 +568,9 @@ EOF
   disk-image-create -a amd64 -o /root/ubuntu-amd64 vm ubuntu
   openstack image create --disk-format qcow2 --container-format bare --private --tag amphora --file /root/ubuntu-amd64.qcow2 amphora-x64-haproxy
   openstack flavor create --id 200 --vcpus 1 --ram 1024 --disk 2 "amphora" --private
-#
-#  create_certificates_octavia
-#  create_sg_octavia
+
+  create_certificates_octavia
+  # create_sg_octavia   # TODO
 }
 
 finish(){
@@ -539,4 +589,5 @@ prepare_placement
 prepare_nova
 prepare_neutron
 finish
+prepare_glance
 prepare_octavia
