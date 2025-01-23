@@ -49,7 +49,7 @@
    + devstack-3 (compute)
 2. все сервисы devstack@*, включая Octavia, в статусе running
 
-## Шаги выполнения:
+### Шаги выполнения:
 1. Запустить создание ВМ через terraform:
 ```commandline
 cd TerraformCluster
@@ -65,8 +65,6 @@ ssh root@$(terraform output -raw cmp2) "tail -f /var/log/cloud-init-output.log"
 ```
 
 ```commandline
-sudo ip route del default via 192.168.12.1
-sudo ip route add default via 192.168.11.1 dev eth0
 sudo ip route add 10.12.0.0/22 via {{ external_fixed_ip }} dev br-ex     # Маршрут до наших инстансов
 ```
 
@@ -90,44 +88,7 @@ stack@devstack-2:~$ openstack hypervisor list
 | 573e906a-544e-4c82-acec-c443dbd72a8b | devstack-1          | QEMU            | 192.168.12.10 | up    |
 | 00a23759-1e33-4eb4-bb61-d51f2e46e161 | devstack-3          | QEMU            | 192.168.12.30 | up    |
 +--------------------------------------+---------------------+-----------------+---------------+-------+
-```
-
-<details>
-  <summary>systemctl list-units | grep 'Devstack devstack@*'</summary>
-
-  ```
-  stack@devstack-2:~$ systemctl list-units | grep 'Devstack devstack@*'
-  devstack@c-api.service                                                                       loaded active running   Devstack devstack@c-api.service
-  devstack@c-sch.service                                                                       loaded active running   Devstack devstack@c-sch.service
-  devstack@c-vol.service                                                                       loaded active running   Devstack devstack@c-vol.service
-  devstack@dstat.service                                                                       loaded active running   Devstack devstack@dstat.service
-  devstack@etcd.service                                                                        loaded active running   Devstack devstack@etcd.service
-  devstack@g-api.service                                                                       loaded active running   Devstack devstack@g-api.service
-  devstack@keystone.service                                                                    loaded active running   Devstack devstack@keystone.service
-  devstack@n-api-meta.service                                                                  loaded active running   Devstack devstack@n-api-meta.service
-  devstack@n-api.service                                                                       loaded active running   Devstack devstack@n-api.service
-  devstack@n-cond-cell1.service                                                                loaded active running   Devstack devstack@n-cond-cell1.service
-  devstack@n-cpu.service                                                                       loaded active running   Devstack devstack@n-cpu.service
-  devstack@n-novnc-cell1.service                                                               loaded active running   Devstack devstack@n-novnc-cell1.service
-  devstack@n-sch.service                                                                       loaded active running   Devstack devstack@n-sch.service
-  devstack@n-super-cond.service                                                                loaded active running   Devstack devstack@n-super-cond.service
-  devstack@o-api.service                                                                       loaded active running   Devstack devstack@o-api.service
-  devstack@o-cw.service                                                                        loaded active running   Devstack devstack@o-cw.service
-  devstack@o-da.service                                                                        loaded active running   Devstack devstack@o-da.service
-  devstack@o-hk.service                                                                        loaded active running   Devstack devstack@o-hk.service
-  devstack@o-hm.service                                                                        loaded active running   Devstack devstack@o-hm.service
-  devstack@placement-api.service                                                               loaded active running   Devstack devstack@placement-api.service
-  devstack@q-ovn-metadata-agent.service                                                        loaded active running   Devstack devstack@q-ovn-metadata-agent.service
-  devstack@q-svc.service                                                                       loaded active running   Devstack devstack@q-svc.service
-  ```
-</details>
-
-#### Если сделали ребут и нужно поднять линки:
-```commandline
-### Выполнять после ребута
-ip a add 192.168.12.10/25 dev br-ex; ip l set up br-ex; ip l set up br-int  # Node1
-ip a add 192.168.12.20/25 dev br-ex; ip l set up br-ex; ip l set up br-int  # Node2
-ip a add 192.168.12.30/25 dev br-ex; ip l set up br-ex; ip l set up br-int  # Node3
+stack@devstack-2:~$ systemctl list-units | grep 'Devstack devstack@*'
 ```
 
 # Далее переходи к файлу Octavia.md
