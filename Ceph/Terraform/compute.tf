@@ -3,7 +3,7 @@ resource "openstack_compute_instance_v2" "osd1" {
   flavor_id         = var.flavor_prc
   key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
-  #user_data         = file("./metadata/init_controller.sh")
+  #user_data         = file("./metadata/init_osd.sh")
 
   network {
     port = openstack_networking_port_v2.port_1_osd1.id
