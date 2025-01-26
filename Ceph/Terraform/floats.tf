@@ -1,3 +1,7 @@
+resource "openstack_networking_floatingip_v2" "float_mgr1" {
+  pool = "external-network"
+}
+
 resource "openstack_networking_floatingip_v2" "float_osd1" {
   pool = "external-network"
 }
@@ -16,6 +20,10 @@ resource "openstack_networking_floatingip_v2" "float_grafana" {
 
 
 
+resource "openstack_networking_floatingip_associate_v2" "association_mgr1" {
+  port_id     = openstack_networking_port_v2.port_1_mgr1.id
+  floating_ip = openstack_networking_floatingip_v2.float_mgr1.address
+}
 
 resource "openstack_networking_floatingip_associate_v2" "association_osd1" {
   port_id     = openstack_networking_port_v2.port_1_osd1.id

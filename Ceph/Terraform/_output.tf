@@ -1,3 +1,7 @@
+output "mgr1" {
+  value = openstack_networking_floatingip_v2.float_mgr1.address
+}
+
 output "osd1" {
   value = openstack_networking_floatingip_v2.float_osd1.address
 }
