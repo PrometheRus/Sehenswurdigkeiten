@@ -42,5 +42,6 @@ terraform.rc
 **/_secrets.tf
 
 keystone_admin
+openstack.rc
 *.idea*
 DevstackCluster/.idea/
