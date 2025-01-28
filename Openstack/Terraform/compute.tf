@@ -1,14 +1,8 @@
-resource "selectel_vpc_keypair_v2" "keypair_openstack" {
-  name       = "keypair"
-  public_key = file("~/.ssh/virt.pub")
-  user_id    = var.service-account-id
-}
-
 # Percona + Keystone + Neutron + Octavia
 resource "openstack_compute_instance_v2" "controller" {
   name              = "controller"
   flavor_id         = var.flavor_ctrl
-  key_pair          = selectel_vpc_keypair_v2.keypair_openstack.name
+  key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
   user_data         = file("./metadata/init_controller.sh")
 
@@ -33,7 +27,7 @@ resource "openstack_compute_instance_v2" "controller" {
 resource "openstack_compute_instance_v2" "cmp_1" {
   name              = "cmp1"
   flavor_id         = var.flavor_prc
-  key_pair          = selectel_vpc_keypair_v2.keypair_openstack.name
+  key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
   user_data         = file("./metadata/init_cmp.sh")
 
@@ -58,7 +52,7 @@ resource "openstack_compute_instance_v2" "cmp_1" {
 resource "openstack_compute_instance_v2" "cmp_2" {
   name              = "cmp2"
   flavor_id         = var.flavor_prc
-  key_pair          = selectel_vpc_keypair_v2.keypair_openstack.name
+  key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
   user_data         = file("./metadata/init_cmp.sh")
 
@@ -83,7 +77,7 @@ resource "openstack_compute_instance_v2" "cmp_2" {
 resource "openstack_compute_instance_v2" "grafana" {
   name              = "grafana"
   flavor_id         = var.flavor_prc
-  key_pair          = selectel_vpc_keypair_v2.keypair_openstack.name
+  key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
   user_data         = file("./metadata/init_grafana.sh")
 
@@ -105,7 +99,7 @@ resource "openstack_compute_instance_v2" "grafana" {
 resource "openstack_compute_instance_v2" "srv" {
   name              = "srv"
   flavor_id         = var.flavor_prc
-  key_pair          = selectel_vpc_keypair_v2.keypair_openstack.name
+  key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
   user_data         = file("./metadata/init_srv.sh")
 

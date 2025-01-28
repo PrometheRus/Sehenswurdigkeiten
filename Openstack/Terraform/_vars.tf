@@ -36,3 +36,8 @@ variable "volume_size" {
   type        = string
   description = "The volume size to use"
 }
+
+variable "service-ssh-key-name" {
+  default     = "valkovskii"
+  type        = string
+}

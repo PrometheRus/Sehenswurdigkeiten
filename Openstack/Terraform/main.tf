@@ -11,7 +11,7 @@ terraform {
   }
 }
 
-# Init selectel provider
+# Init Selectel provider
 provider "selectel" {
   auth_url    = "https://cloud.api.selcloud.ru/identity/v3/"
   domain_name = var.domain
