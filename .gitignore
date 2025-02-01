@@ -39,8 +39,6 @@ terraform.rc
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform
 
-**/_secrets.tf
-
 keystone_admin
 openstack.rc
 *.idea*
