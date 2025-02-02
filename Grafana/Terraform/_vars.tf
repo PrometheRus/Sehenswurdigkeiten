@@ -1,11 +1,13 @@
-variable "flavor_id" {
-  default     = "1012"                                    # SL1.1-2048
+# openstack flavor show PRC10.2-2048 -c id -f value
+variable "flavor_prc" {
+  default     = "9013"
   type        = string
   description = "The ID of the flavor to use"
 }
 
+# openstack image show "Alma Linux 9 64-bit" -c id -f value
 variable "image_id" {
-  default     = "b671a80e-9bf0-4861-9833-bd711bd8a02f"    # Ubuntu 24.04
+  default     = "de41300f-f49d-4d95-a988-3fd3db1e9e4e"
   type        = string
   description = "The ID of the image to use"
 }
@@ -22,19 +24,11 @@ variable "auth_region" {
   description = "The region to use"
 }
 
-
-variable "volume_type" {
-  default     = "basic.ru-9a"
-  type        = string
-  description = "The volume type to use"
-}
-
 variable "volume_size" {
   default     = "15"
   type        = string
   description = "The volume size to use"
 }
-
 
 variable "domain" {
   default     = "<domain-id>"

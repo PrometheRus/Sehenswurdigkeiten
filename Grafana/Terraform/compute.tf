@@ -1,77 +1,62 @@
-resource "selectel_vpc_keypair_v2" "keypair_1" {
-  name    = "keypair"
-  public_key = file("~/.ssh/virt.pub")
-  user_id = var.service-account-main-id
-}
-
 resource "openstack_compute_instance_v2" "grafana" {
   name              = "grafana"
-  flavor_id         = var.flavor_id
-  key_pair          = selectel_vpc_keypair_v2.keypair_1.name
+  flavor_id         = var.flavor_prc
+  key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
+  user_data         = file("./metadata/init_grafana.sh")
 
   network {
     port = openstack_networking_port_v2.port_grafana.id
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_1.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }
 
 resource "openstack_compute_instance_v2" "prometheus" {
   name              = "prometheus"
-  flavor_id         = var.flavor_id
-  key_pair          = selectel_vpc_keypair_v2.keypair_1.name
+  flavor_id         = var.flavor_prc
+  key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
+  user_data         = file("./metadata/init_prom.sh")
 
   network {
     port = openstack_networking_port_v2.port_prometheus.id
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_2.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
-  }
-}
-
-resource "openstack_compute_instance_v2" "nginx" {
-  name              = "nginx"
-  flavor_id         = var.flavor_id
-  key_pair          = selectel_vpc_keypair_v2.keypair_1.name
-  availability_zone = var.availability_zone
-
-  network {
-    port = openstack_networking_port_v2.port_nginx.id
-  }
-
-  block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_3.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }
 
 resource "openstack_compute_instance_v2" "docker" {
   name              = "docker"
-  flavor_id         = var.flavor_id
-  key_pair          = selectel_vpc_keypair_v2.keypair_1.name
+  flavor_id         = var.flavor_prc
+  key_pair          = var.service-ssh-key-name
   availability_zone = var.availability_zone
+  user_data         = file("./metadata/init_docker.sh")
 
   network {
     port = openstack_networking_port_v2.port_docker.id
   }
 
   block_device {
-    uuid             = openstack_blockstorage_volume_v3.volume_4.id
-    source_type      = "volume"
-    destination_type = "volume"
-    boot_index       = 0
+    uuid                  = var.image_id
+    volume_size           = var.volume_size
+    source_type           = "image"
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
   }
 }

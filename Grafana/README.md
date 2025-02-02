@@ -1,104 +1,68 @@
-# Grafana + Prometheus + Node exporter на **Ubuntu 24.04 LTS**
+## Grafana + Prometheus + Node exporter на **Alma Linux 9 64-bit**
 
-### Предварительные условия:
-1. Подготовить локально openstack cli (по [инструкции](https://docs.selectel.ru/en/cloud/servers/tools/openstack/))
-2. Создать сервисный аккаунт (по инструкции) с ролями:
-   1. ``Администратор <project-name>``
-   2. ``Администратор пользователей``
-3. Подготовить локально Terraform (по [инструкции](https://docs.selectel.ru/terraform/quickstart/))
-4. Заполнить переменные Terraform **своими** значениями в файле `./1.Terraform/_vars.tf`
-   + selectel-domain
-   + selectel-project-id
-   + service-account-name
-   + service-account-password
-   + service-account-id
-5. Сгенерировать ssh-ключ, который будет использоваться для доступа к виртуальным машинам:
-   ```
-   ssh-keyen -t ed25519 -f ~/.ssh/virt
-   ```
-6. Установить anisble-core
+#### Что нужно добавить в Terraform, чтобы использовать этот мануал:
+##### Ваши секреты сервисного аккаунта и прочая:
+```commandline
+tee Sehenswurdigkeiten/Grafana/Terraform/secret.tfvars > << EOF
+domain                   = "<domain>"
+project-id               = "<project-id>"
+service-account-name     = "<project-admin-service-account-name>"
+service-account-password = "<pass>"
+service-account-id       = "<id>"
+service-ssh-key-name     = "<name>"
+EOF
+```
+##### Ваши секреты объектного хранилища для сохранения terraform.state:
+```commandline
+tee Sehenswurdigkeiten/Grafana/Terraform/secret.tfvars > << EOF
+bucket     = "<bucket>"
+access_key = "<key>"
+secret_key = "<key>"
+EOF
+```
+
+## 1. Deployment via Terraform:
+
+```commandline
+cd Sehenswurdigkeiten/Grafana/Terraform/
+terraform init -backend-config=secret.backend.tfvars
+terraform apply -var-file=secret.tfvars -auto-approve
+```
+
+Будут созданы 3 ВМ
+```commandline
+ssh root@$(terraform output -raw grafana)
+ssh root@$(terraform output -raw prometheus)
+ssh root@$(terraform output -raw docker)
+
+# Опционально
+ssh root@$(terraform output -raw docker)
+cd docker
+docker compose --file docker-compose-web.yml -p nginx up -d
+sleep 5s;
+docker compose --file docker-compose-web.yml -p nginx ps
+```
 
 
-## 1.1. Manual deployment (openstack cli)
-Развернул аналогично задаче по [Galera Cluster](https://github.com/PrometheRus/Sehenswurdigkeiten/tree/main/Galera#11-manual-deployment-openstack-cli) (только без балансировщика), каких то особых нюансов нет. Дублировать информацию не вижу целесообразным.
-
-## 1.2 Automatic deployment (Terraform):
-
-### Шаги выполнения:
-   ```
-   git clone git@github.com:PrometheRus/Sehenswurdigkeiten.git
-   cd Sehenswurdigkeiten/Grafana/1.Terraform/
-   terraform fmt && terraform validate
-   terraform plan
-   terraform apply
-   ```
-    
-**После** выполнения будут созданы 4 ВМ. В выводе команды будут указаные приватные (4 шт) и публичные (2 шт) адреса машин. **_Машина Grafana выступает в роли Bastion_**.
-
-## 2. Provisioning (настройка кластера через Ansible):
-### Шаги выполнение
-1. Перейти в директорию с плейбуком:
-   ```
-   cd Sehenswurdigkeiten/Grafana/2.Ansible/ 
-   ```
-2. 4 приватные адреса и 2 публичные адреса ручками добавить в  ```hosts.ini```
-   ```
-   vi hosts.init
-   ```
-
-<details>
-   <summary>3. Копируем ранее сгенерированный ssh-ключ и ssh-config на машину-бастион (замените в команде IP на публичный IP адрес машины grafana) для доступа к виртуальным машинам:</summary>
-
-   ```
-   tee root_config > /dev/null <<EOF
-   Host *
-   IdentityFile ~/.ssh/virt
-   StrictHostKeyChecking no
-   EOF
-   chmod 600 root_config
-   bastion_ip={{ REPLACE ME }}
-   rsync ~/.ssh/virt root@${bastion_ip}:/root/.ssh
-   rsync ./root_config root@${bastion_ip}:/root/.ssh/config
-   rm -f ./root_config
-   ```
-
-</details>
-
-4. Запустить плейбук:
-   ```
-   ansible-playbook playbook.yml
-   ```
-5. Настроить дашборд:
+### Настроить дашборд:
    1. Переходим на публичный адрес машины **grafana** ``<IP-address>:3000``, логинимся под ``admin:admin``, устанавливаем новый админский пароль
    2. В разделе **/dashboards** импортируем дашборд **1860**
 
-**Результат: доступен дашборд с системными метриками с возможностью выбора из 4х машин**
-![img.png](img.png)
+**Результат: доступен дашборд с системными метриками с возможностью выбора из 3х машин**
 
-#### Моя графана доступна по [ссылке](http://87.228.27.218:3000/d/rYdddlPWk/node-exporter-full). Креды: ``viewer:viewer``, доступ из под 188.93.16.0/22 (могу открыть еще при необходимости)
-
-## 3. Docker-compose + Grafana + Prometheus + Cadvisor:
-В пунктах **1.2** и **2** Терраформ уже развернул машину **docker**, ansible перекинул файлы, и установил пакеты. Дополнительные действия по подготовке не требуются.
-
-### Как поднять контейнеры:
-1. Заходим по **ssh** на машину ``<public_ip_address_docker>`` и запускаем:
+## 2. Deployment via Docker:
 ```
-docker compose -p demo up -d
-...
+ssh root@$(terraform output -raw docker) 
+cd observability
+docker compose --file docker-compose-observability.yml -p observability up -d
+sleep 5s;
+docker compose --file docker-compose-observability.yml -p observability ps -a
 
-# Проверяем, что все "бегит"
-root@docker:~# docker compose -p demo ps
-NAME                IMAGE                      COMMAND                  SERVICE      CREATED         STATUS                   PORTS
-demo-cadvisor-1     gcr.io/cadvisor/cadvisor   "/usr/bin/cadvisor -…"   cadvisor     6 minutes ago   Up 6 minutes (healthy)   0.0.0.0:8080->8080/tcp, :::8080->8080/tcp
-demo-grafana-1      grafana/grafana            "/run.sh"                grafana      6 minutes ago   Up 6 minutes             0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
-demo-lb-1           nginx                      "/docker-entrypoint.…"   lb           6 minutes ago   Up 6 minutes             80/tcp, 0.0.0.0:8888->8888/tcp, :::8888->8888/tcp
-demo-nginx-1        nginx                      "/docker-entrypoint.…"   nginx        6 minutes ago   Up 6 minutes             80/tcp
-demo-nginx-2        nginx                      "/docker-entrypoint.…"   nginx        6 minutes ago   Up 6 minutes             80/tcp
-demo-nginx-3        nginx                      "/docker-entrypoint.…"   nginx        6 minutes ago   Up 6 minutes             80/tcp
-demo-prometheus-1   prom/prometheus            "/bin/prometheus --c…"   prometheus   6 minutes ago   Up 6 minutes             0.0.0.0:9090->9090/tcp, :::9090->9090/tcp
+# docker compose --file docker-compose-observability.yml -p observability down
+
+seq 1 500 | xargs -P5 -I{} curl http://188.124.51.185:8880/
 ```
-2. Проверяем в браузере по ``<public_ip_address_docker>:3000``, что Grafana поднялась
-3. Импортируем ручками дашборд **14282**
+Проверяем в браузере по ``<public_ip_address_docker>:3000``, что Grafana в контейнере поднялась и импортируем ручками дашборд **14282**
 
 ### По итогу развернуты контейнеры:
 1. prometheus
@@ -114,4 +78,3 @@ demo-prometheus-1   prom/prometheus            "/bin/prometheus --c…"   promet
 #### _Изоляция контейнеров на уровне user namespace НЕ реализована, так как cadvisor должен иметь доступ к хостовому namespace_.
 
 **Результат: доступен дашборд с системными метриками с возможностью выбора из 7ми контейнеров**
-![img_2.png](img_2.png)
