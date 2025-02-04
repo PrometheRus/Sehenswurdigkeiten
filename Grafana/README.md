@@ -14,7 +14,7 @@ EOF
 ```
 ##### Ваши секреты объектного хранилища для сохранения terraform.state:
 ```commandline
-tee Sehenswurdigkeiten/Grafana/Terraform/secret.tfvars > << EOF
+tee Sehenswurdigkeiten/Grafana/Terraform/secret.backend.tfvars > << EOF
 bucket     = "<bucket>"
 access_key = "<key>"
 secret_key = "<key>"

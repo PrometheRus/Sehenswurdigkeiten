@@ -1,46 +1,29 @@
-resource "openstack_networking_floatingip_v2" "floatingip_controoller" {
-  pool = "external-network"
+module "float_controller" {
+  source = "../../modules/neutron/float"
+  port_id = module.controller_ports.first_port_id
 }
 
-resource "openstack_networking_floatingip_v2" "floatingip_cmp1" {
-  pool = "external-network"
+module "float_cmp1" {
+  source = "../../modules/neutron/float"
+  port_id = module.cmp1_ports.first_port_id
 }
 
-resource "openstack_networking_floatingip_v2" "floatingip_cmp2" {
-  pool = "external-network"
+module "float_cmp2" {
+  source = "../../modules/neutron/float"
+  port_id = module.cmp2_ports.first_port_id
 }
 
-resource "openstack_networking_floatingip_v2" "floatingip_grafana" {
-  pool = "external-network"
+module "float_grafana" {
+  source = "../../modules/neutron/float"
+  port_id = module.grafana_ports.first_port_id
 }
 
-resource "openstack_networking_floatingip_v2" "floatingip_srv" {
-  pool = "external-network"
+module "float_mysql" {
+  source = "../../modules/neutron/float"
+  port_id = module.mysql_ports.first_port_id
 }
 
-
-
-resource "openstack_networking_floatingip_associate_v2" "association_controller" {
-  port_id     = openstack_networking_port_v2.port_1_controller.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_controoller.address
-}
-
-resource "openstack_networking_floatingip_associate_v2" "association_cmp_1" {
-  port_id     = openstack_networking_port_v2.port_1_cmp1.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_cmp1.address
-}
-
-resource "openstack_networking_floatingip_associate_v2" "association_cmp_2" {
-  port_id     = openstack_networking_port_v2.port_1_cmp2.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_cmp2.address
-}
-
-resource "openstack_networking_floatingip_associate_v2" "association_grafana" {
-  port_id     = openstack_networking_port_v2.port_1_grafana.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_grafana.address
-}
-
-resource "openstack_networking_floatingip_associate_v2" "association_srv" {
-  port_id     = openstack_networking_port_v2.port_1_srv.id
-  floating_ip = openstack_networking_floatingip_v2.floatingip_srv.address
+module "float_rabbitmq" {
+  source = "../../modules/neutron/float"
+  port_id = module.rabbitmq_ports.first_port_id
 }

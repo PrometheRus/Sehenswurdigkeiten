@@ -34,3 +34,9 @@ resource "openstack_networking_router_interface_v2" "router_interface_1" {
   router_id = openstack_networking_router_v2.router.id
   subnet_id = openstack_networking_subnet_v2.subnet_1.id
 }
+
+# FIREWALL
+module "firewall_rules" {
+  source = "../../modules/neutron/fw"
+  router_interface_id = openstack_networking_router_interface_v2.router_interface_1.port_id
+}

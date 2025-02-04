@@ -16,7 +16,16 @@ EOF
 }
 
 prepare_packages() {
-  dnf install -qy golang-github-prometheus-node-exporter golang-github-prometheus grafana centos-release-openstack-zed
+  dnf install -qy dnf-plugins-core golang-github-prometheus-node-exporter centos-release-openstack-zed
+  dnf config-manager --set-enabled crb
+  systemctl enable --now prometheus-node-exporter.service
+
+  # Install Gnocchi
+  dnf -qy install openstack-gnocchi-api openstack-gnocchi-metricd python3-gnocchiclient
+  dnf -qy install uwsgi-plugin-common uwsgi-plugin-python3 uwsgi
+
+  # Update system packages
+  dnf update -qy
 }
 
 prepare_etcd() {
@@ -47,40 +56,14 @@ EOF
   systemctl enable --now etcd
 }
 
-prepare_prometheus() {
-  tee /etc/prometheus/prometheus.yml > /dev/null <<EOF
-scrape_configs:
-  - job_name: 'node'
+prepare_ceilometer() {
+  openstack user create --domain default --password "$(etcdctl get CEILOMETER_PASS --print-value-only)" ceilometer
+  openstack role add --project service --user ceilometer admin
+  openstack service create --name ceilometer --description "Telemetry" metering
 
-    scrape_interval: 5s
-    scrape_timeout: 5s
-    static_configs:
-      - targets: [controller:9100,cmp1:9100,cmp2:9100,grafana:9100,mysql:9100,stat:9100,rabbitmq:9100]
-EOF
+  openstack user create --domain default --password "$(etcdctl get GNOCCI_PASS --print-value-only)" gnocchi
+  openstack role add --project service --user gnocchi admin
+  openstack service create --name gnocchi --description "Metric Service" metric
 
-  tee /etc/grafana/provisioning/datasources/grafana.yml > /dev/null <<EOF
-datasources:
-  - name: Prometheus
-    type: prometheus
-    access: proxy
-    url: http://localhost:9090
-    jsonData:
-      httpMethod: POST
-      manageAlerts: true
-      prometheusType: Prometheus
-      cacheLevel: 'High'
-      disableRecordingRules: false
-      incrementalQueryOverlapWindow: 10m
-      exemplarTraceIdDestinations:
-        - datasourceUid: my_jaeger_uid
-          name: traceID
-EOF
-
-  systemctl enable --now prometheus grafana-server prometheus-node-exporter
-  systemctl restart prometheus grafana-server prometheus-node-exporter
+  for val in public internal admin; do openstack endpoint create --region RegionOne metric ${val} http://controller:8041; done
 }
-
-prepare_basic
-prepare_packages
-prepare_etcd
-prepare_prometheus

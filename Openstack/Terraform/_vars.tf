@@ -1,13 +1,6 @@
 # openstack flavor show PRC10.2-2048 -c id -f value
-variable "flavor_prc" {
+variable "flavor_id" {
   default     = "9013"
-  type        = string
-  description = "The ID of the flavor to use"
-}
-
-# openstack flavor show PRC50.4-8192 -c id -f value
-variable "flavor_ctrl" {
-  default     = "9055"
   type        = string
   description = "The ID of the flavor to use"
 }
@@ -37,6 +30,10 @@ variable "volume_size" {
   description = "The volume size to use"
 }
 
+variable "enable_resource" {
+  default = false
+  type = bool
+}
 
 variable "domain" {
   default     = "<domain-id>"

@@ -1,118 +1,54 @@
 # Percona + Keystone + Neutron + Octavia
-resource "openstack_compute_instance_v2" "controller" {
-  name              = "controller"
-  flavor_id         = var.flavor_ctrl
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_controller.sh")
-
-  network {
-    port = openstack_networking_port_v2.port_1_controller.id
-  }
-
-  network {
-    port = openstack_networking_port_v2.port_2_controller.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
+module "vm_controller" {
+  source         = "../../modules/nova/compute"
+  hostname       = "controller"
+  key_pair       = var.service-ssh-key-name
+  first_port_id  = module.controller_ports.first_port_id
+  second_port_id = module.controller_ports.second_port_id
+  user_data      = "init_controller.sh"
 }
 
-resource "openstack_compute_instance_v2" "cmp_1" {
-  name              = "cmp1"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_cmp.sh")
-
-  network {
-    port = openstack_networking_port_v2.port_1_cmp1.id
-  }
-
-  network {
-    port = openstack_networking_port_v2.port_2_cmp1.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
+module "vm_cmp1" {
+  source         = "../../modules/nova/compute"
+  hostname       = "cmp1"
+  key_pair       = var.service-ssh-key-name
+  first_port_id  = module.cmp1_ports.first_port_id
+  second_port_id = module.cmp1_ports.second_port_id
+  user_data      = "init_cmp.sh"
 }
 
-resource "openstack_compute_instance_v2" "cmp_2" {
-  name              = "cmp2"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_cmp.sh")
-
-  network {
-    port = openstack_networking_port_v2.port_1_cmp2.id
-  }
-
-  network {
-    port = openstack_networking_port_v2.port_2_cmp2.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
+module "vm_cmp2" {
+  source         = "../../modules/nova/compute"
+  hostname       = "cmp1"
+  key_pair       = var.service-ssh-key-name
+  first_port_id  = module.cmp2_ports.first_port_id
+  second_port_id = module.cmp2_ports.second_port_id
+  user_data      = "init_cmp.sh"
 }
 
-resource "openstack_compute_instance_v2" "grafana" {
-  name              = "grafana"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_grafana.sh")
-
-  network {
-    port = openstack_networking_port_v2.port_1_grafana.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
+module "vm_grafana" {
+  source         = "../../modules/nova/compute"
+  hostname       = "grafana"
+  key_pair       = var.service-ssh-key-name
+  first_port_id  = module.grafana_ports.first_port_id
+  second_port_id = module.grafana_ports.second_port_id
+  user_data      = "init_grafana.sh"
 }
 
-# Rabbit
-resource "openstack_compute_instance_v2" "srv" {
-  name              = "srv"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_srv.sh")
+module "vm_rabbitmq" {
+  source         = "../../modules/nova/compute"
+  hostname       = "rabbitmq"
+  key_pair       = var.service-ssh-key-name
+  first_port_id  = module.rabbitmq_ports.first_port_id
+  second_port_id = module.rabbitmq_ports.second_port_id
+  user_data      = "init_rabbitmq.sh"
+}
 
-  network {
-    port = openstack_networking_port_v2.port_1_srv.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
+module "vm_mysql" {
+  source         = "../../modules/nova/compute"
+  hostname       = "mysql"
+  key_pair       = var.service-ssh-key-name
+  first_port_id  = module.mysql_ports.first_port_id
+  second_port_id = module.mysql_ports.second_port_id
+  user_data      = "init_mysql.sh"
 }

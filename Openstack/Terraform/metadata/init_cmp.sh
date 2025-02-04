@@ -2,24 +2,39 @@
 
 prepare_basic() {
   timedatectl set-timezone Europe/Moscow
-  dnf install -qy nmap telnet openssl
+  # dnf install -qy nmap telnet openssl
   tee -a /etc/hosts > /dev/null <<EOF
 
-192.168.11.10 controller
-192.168.11.20 cmp1
-192.168.11.30 cmp2
-192.168.11.40 grafana
-192.168.11.41 srv
+192.168.11.30 controller
+192.168.11.31 cmp1
+192.168.11.32 cmp2
+192.168.11.33 grafana
+192.168.11.34 rabbitmq
+192.168.11.35 stat
+192.168.11.36 mysql
 EOF
+}
+
+prepare_packages() {
+  dnf install -qy golang-github-prometheus-node-exporter centos-release-openstack-zed libvirt
+  systemctl enable --now prometheus-node-exporter.service
+
+  # Install Neutron
+  dnf install -qy openstack-neutron-openvswitch
+  systemctl enable --now neutron-openvswitch-agent
+
+  # Install Nova
+  dnf install -qy openstack-nova-compute
 }
 
 prepare_etcd() {
   dnf -qy install etcd
+
   tee /etc/etcd/etcd.conf > /dev/null <<EOF
 ETCD_NAME=$(hostname)
 ETCD_LISTEN_PEER_URLS="http://$(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1):2380"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="http://$(hostname):2380"
-ETCD_INITIAL_CLUSTER="srv=http://srv:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380"
+ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380"
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
 ETCD_ADVERTISE_CLIENT_URLS="http://localhost:2379"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379"
@@ -30,31 +45,20 @@ ETCD_HEARTBEAT_INTERVAL="1000"
 ETCD_INITIAL_ELECTION_TICK_ADVANCE="false"
 ETCD_AUTO_COMPACTION_RETENTION="1"
 EOF
+
   mkdir -p /etc/systemd/system/etcd.service.d
   tee /etc/systemd/system/etcd.service.d/override.conf <<EOF
 [Service]
 TimeoutSec=1800
 EOF
   systemctl daemon-reload
-  systemctl start etcd
-}
-
-prepare_packages() {
-  dnf install -qy golang-github-prometheus-node-exporter centos-release-openstack-zed libvirt
-  systemctl start prometheus-node-exporter.service
-
-  # Install Neutron
-  dnf install -qy openstack-neutron-openvswitch
-  systemctl start neutron-openvswitch-agent
-
-  # Install Nova
-  dnf install -qy openstack-nova-compute
+  systemctl enable --now etcd
 }
 
 prepare_nova () {
   tee /etc/nova/nova.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@rabbitmq:5672/openstack
 enabled_apis = osapi_compute,metadata
 use_journal = true
 my_ip = $(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1)
@@ -64,10 +68,10 @@ compute_driver=libvirt.LibvirtDriver
 virt_type = kvm
 
 [api_database]
-connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@controller/nova_api
+connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@mysql/nova_api
 
 [database]
-connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@controller/nova
+connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@mysql/nova
 
 [api]
 auth_strategy = keystone
@@ -135,7 +139,7 @@ prepare_neutron() {
   # https://docs.openstack.org/neutron/latest/install/compute-install-option2-rdo.html
   tee /etc/neutron/neutron.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@rabbitmq:5672/openstack
 use_journal = true
 
 [oslo_concurrency]
@@ -166,7 +170,7 @@ EOF
 
 prepare_basic
 prepare_packages
-# Ждать, пока поднимется srv (rabbit). В будущем можно заменить на проверку курлом
+# Ждать, пока поднимется rabbitmq. В будущем можно заменить на проверку курлом
 sleep 200s;
 prepare_etcd
 prepare_nova

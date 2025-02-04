@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# ОСТАНОВИЛСЯ НА "Upload the amphora image"
-
 prepare_basic() {
   timedatectl set-timezone Europe/Moscow
-  dnf install -qy nmap telnet openssl
+  # dnf install -qy nmap telnet openssl
   tee -a /etc/hosts > /dev/null <<EOF
 
-192.168.11.10 controller
-192.168.11.20 cmp1
-192.168.11.30 cmp2
-192.168.11.40 grafana
-192.168.11.41 srv
+192.168.11.30 controller
+192.168.11.31 cmp1
+192.168.11.32 cmp2
+192.168.11.33 grafana
+192.168.11.34 rabbitmq
+192.168.11.35 stat
+192.168.11.36 mysql
 EOF
 }
 
@@ -19,11 +19,6 @@ prepare_packages() {
   dnf install -qy dnf-plugins-core golang-github-prometheus-node-exporter centos-release-openstack-zed
   dnf config-manager --set-enabled crb
   systemctl enable --now prometheus-node-exporter.service
-
-  # Install Percona
-  dnf -qy install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
-  percona-release setup ps-80
-  dnf -qy install percona-server-server
 
   # Install Keystone
   dnf install -qy openstack-keystone httpd python3-mod_wsgi
@@ -41,26 +36,18 @@ prepare_packages() {
   # Install Glance
   dnf -qy install openstack-glance
 
-  # Install Octavia
-  dnf -qy install openstack-octavia-api openstack-octavia-health-manager openstack-octavia-housekeeping openstack-octavia-worker python3-octavia python3-octaviaclient
-
-  # Install Octavia (building images)
-  dnf -qy install qemu-kvm diskimage-builder kpartx
-
-  # Install Openstack CLI
-  dnf -qy install python3-openstackclient openstack-selinux
-
   # Update system packages
   dnf update -qy
 }
 
 prepare_etcd() {
   dnf -qy install etcd
+
   tee /etc/etcd/etcd.conf > /dev/null <<EOF
 ETCD_NAME=$(hostname)
 ETCD_LISTEN_PEER_URLS="http://$(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1):2380"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="http://$(hostname):2380"
-ETCD_INITIAL_CLUSTER="srv=http://srv:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380"
+ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380"
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
 ETCD_ADVERTISE_CLIENT_URLS="http://localhost:2379"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379"
@@ -71,90 +58,24 @@ ETCD_HEARTBEAT_INTERVAL="1000"
 ETCD_INITIAL_ELECTION_TICK_ADVANCE="false"
 ETCD_AUTO_COMPACTION_RETENTION="1"
 EOF
+
   mkdir -p /etc/systemd/system/etcd.service.d
   tee /etc/systemd/system/etcd.service.d/override.conf <<EOF
 [Service]
 TimeoutSec=1800
 EOF
   systemctl daemon-reload
-  systemctl start etcd
-}
-
-prepare_password () {
-  MYSQL_PASS="$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 20)!"
-  etcdctl put MYSQL_PASS $MYSQL_PASS
-
-  ADMIN_PASS="$(openssl rand -hex 8)"
-  etcdctl put ADMIN_PASS $ADMIN_PASS
-  GLANCE_PASS="$(openssl rand -hex 8)";
-  etcdctl put GLANCE_PASS $GLANCE_PASS;
-  NEUTRON_PASS="$(openssl rand -base64 8)"
-  etcdctl put NEUTRON_PASS $NEUTRON_PASS
-  NOVA_PASS="$(openssl rand -hex 8)";
-  etcdctl put NOVA_PASS $NOVA_PASS
-  PLACEMENT_PASS="$(openssl rand -hex 8)";
-  etcdctl put PLACEMENT_PASS $PLACEMENT_PASS
-  OCTAVIA_PASS="$(openssl rand -hex 8)";
-  etcdctl put OCTAVIA_PASS $OCTAVIA_PASS
-  METADATA_SECRET="$(openssl rand -hex 8)";
-  etcdctl put METADATA_SECRET $METADATA_SECRET
-  DEMO_USER_PASS="$(openssl rand -hex 8)";
-  etcdctl put DEMO_USER_PASS $DEMO_USER_PASS;
-  RABBIT_PASS="$(openssl rand -hex 8)";
-  etcdctl put RABBIT_PASS $RABBIT_PASS;
-}
-
-prepare_percona() {
-  # Change root's password
-  systemctl stop mysqld; systemctl set-environment MYSQLD_OPTS="--skip-grant-tables"; systemctl start mysqld
-  mysql -e "FLUSH PRIVILEGES; ALTER USER 'root'@'localhost' IDENTIFIED BY '$(etcdctl get MYSQL_PASS --print-value-only)';"
-  systemctl stop mysqld; systemctl unset-environment MYSQLD_OPTS; systemctl start mysqld
-
-  # Prepare databases and users
-  MYSQL_PASS=$(etcdctl get MYSQL_PASS --print-value-only)
-
-  tee /root/prepare.sql > /dev/null <<EOF
-CREATE DATABASE IF NOT EXISTS keystone;
-CREATE USER IF NOT EXISTS 'keystone'@'%' IDENTIFIED BY '${MYSQL_PASS}';
-GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%';
-
-CREATE DATABASE IF NOT EXISTS neutron;
-CREATE USER IF NOT EXISTS 'neutron'@'%' IDENTIFIED BY '${MYSQL_PASS}';
-GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%';
-
-CREATE DATABASE IF NOT EXISTS octavia;
-CREATE USER IF NOT EXISTS 'octavia'@'%' IDENTIFIED BY '${MYSQL_PASS}';
-GRANT ALL PRIVILEGES ON octavia.* TO 'octavia'@'%';
-
-CREATE DATABASE IF NOT EXISTS glance;
-CREATE USER IF NOT EXISTS 'glance'@'%' IDENTIFIED BY '${MYSQL_PASS}';
-GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%';
-
-CREATE DATABASE IF NOT EXISTS nova;
-CREATE DATABASE IF NOT EXISTS nova_api;
-CREATE DATABASE IF NOT EXISTS nova_cell0;
-CREATE USER IF NOT EXISTS 'nova'@'%' IDENTIFIED BY '${MYSQL_PASS}';
-GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%';
-GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%';
-GRANT ALL PRIVILEGES ON nova_cell0.* TO 'nova'@'%';
-
-CREATE DATABASE IF NOT EXISTS placement;
-CREATE USER IF NOT EXISTS 'placement'@'%' IDENTIFIED BY '${MYSQL_PASS}';
-GRANT ALL PRIVILEGES ON placement.* TO 'placement'@'%';
-EOF
-  chmod 600 /root/prepare.sql
-
-  mysql --password="$(etcdctl get MYSQL_PASS --print-value-only)" -f < /root/prepare.sql
+  systemctl enable --now etcd
 }
 
 prepare_keystone() {
   tee /etc/keystone/keystone.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@rabbitmq:5672/openstack
 use_journal = true
 
 [database]
-connection = mysql+pymysql://keystone:$(etcdctl get MYSQL_PASS --print-value-only)@controller/keystone
+connection = mysql+pymysql://keystone:$(etcdctl get MYSQL_PASS --print-value-only)@mysql/keystone
 
 [token]
 provider = fernet
@@ -209,11 +130,11 @@ prepare_placement() {
     # Configure Placement
   tee /etc/placement/placement.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@rabbitmq:5672/openstack
 use_journal = true
 
 [placement_database]
-connection = mysql+pymysql://placement:$(etcdctl get MYSQL_PASS --print-value-only)@controller/placement
+connection = mysql+pymysql://placement:$(etcdctl get MYSQL_PASS --print-value-only)@mysql/placement
 
 [api]
 auth_strategy = keystone
@@ -282,16 +203,16 @@ prepare_nova() {
     # Configure Nova
   tee /etc/nova/nova.conf > /dev/null <<EOF
 [DEFAULT]
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@rabbitmq:5672/openstack
 use_journal = true
 enabled_apis = osapi_compute,metadata
 my_ip = $(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1)
 
 [api_database]
-connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@controller/nova_api
+connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@mysql/nova_api
 
 [database]
-connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@controller/nova
+connection = mysql+pymysql://nova:$(etcdctl get MYSQL_PASS --print-value-only)@mysql/nova
 
 [api]
 auth_strategy = keystone
@@ -365,13 +286,13 @@ prepare_neutron() {
 [DEFAULT]
 core_plugin = ml2
 service_plugins = router
-transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@srv:5672/openstack
+transport_url = rabbit://openstack:$(etcdctl get RABBIT_PASS --print-value-only)@rabbitmq:5672/openstack
 use_journal = true
 notify_nova_on_port_status_changes = true
 notify_nova_on_port_data_changes = true
 
 [database]
-connection = mysql+pymysql://neutron:$(etcdctl get MYSQL_PASS --print-value-only)@controller/neutron
+connection = mysql+pymysql://neutron:$(etcdctl get MYSQL_PASS --print-value-only)@mysql/neutron
 
 [keystone_authtoken]
 www_authenticate_uri = http://controller:5000
@@ -472,6 +393,10 @@ EOF
 
   # L3
   systemctl enable --now neutron-l3-agent.service
+
+  # After CMP1 & CMP2
+  openstack compute service list --service nova-compute
+  su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
 }
 
 prepare_glance() {
@@ -483,7 +408,7 @@ prepare_glance() {
   tee /etc/glance/glance-api.conf > /dev/null <<EOF
 [database]
 # use_keystone_limits = True    (optional)
-connection = mysql+pymysql://glance:$(etcdctl get MYSQL_PASS --print-value-only)@controller/glance
+connection = mysql+pymysql://glance:$(etcdctl get MYSQL_PASS --print-value-only)@mysql/glance
 enabled_backends=fs:file
 
 [keystone_authtoken]
@@ -521,73 +446,11 @@ EOF
   systemctl enable --now openstack-glance-api.service
 }
 
-create_certificates_octavia() {
-  git clone https://opendev.org/openstack/octavia.git
-  cd octavia/bin/ || exit
-  source create_dual_intermediate_CA.sh
-  sudo mkdir -p /etc/octavia/certs/private
-  sudo chmod 755 /etc/octavia -R
-  sudo cp -p etc/octavia/certs/server_ca.cert.pem /etc/octavia/certs
-  sudo cp -p etc/octavia/certs/server_ca-chain.cert.pem /etc/octavia/certs
-  sudo cp -p etc/octavia/certs/server_ca.key.pem /etc/octavia/certs/private
-  sudo cp -p etc/octavia/certs/client_ca.cert.pem /etc/octavia/certs
-  sudo cp -p etc/octavia/certs/client.cert-and-key.pem /etc/octavia/certs/private
-}
-
-create_sg_octavia() { # TODO
-  openstack security group create lb-mgmt-sec-grp
-  openstack security group rule create --protocol icmp lb-mgmt-sec-grp
-  openstack security group rule create --protocol tcp --dst-port 22 lb-mgmt-sec-grp
-  openstack security group rule create --protocol tcp --dst-port 9443 lb-mgmt-sec-grp
-  openstack security group create lb-health-mgr-sec-grp
-  openstack security group rule create --protocol udp --dst-port 5555 lb-health-mgr-sec-grp
-  openstack keypair create --public-key ~/.ssh/id_rsa.pub mykey   # TODO
-  sudo mkdir -m755 -p /etc/dhcp/octavia
-  sudo cp octavia/etc/dhcp/dhclient.conf /etc/dhcp/octavia
-}
-
-prepare_octavia() {
-  source /root/admin-openrc
-
-  openstack user create --domain default --password "$(etcdctl get OCTAVIA_PASS --print-value-only)" octavia
-  openstack role add --project service --user octavia admin
-  openstack service create --name octavia --description "OpenStack Octavia" load-balancer
-  for val in public internal admin; do openstack endpoint create --region RegionOne load-balancer ${val} http://controller:9876; done
-  tee /root/octavia-openrc > /dev/null << EOF
-export OS_PROJECT_DOMAIN_NAME=Default
-export OS_USER_DOMAIN_NAME=Default
-export OS_PROJECT_NAME=service
-export OS_USERNAME=octavia
-export OS_PASSWORD=$(etcdctl get OCTAVIA_PASS --print-value-only)
-export OS_AUTH_URL=http://controller:5000
-export OS_IDENTITY_API_VERSION=3
-export OS_IMAGE_API_VERSION=2
-export OS_VOLUME_API_VERSION=3
-EOF
-  chmod 600 /root/octavia-openrc
-  disk-image-create -a amd64 -o /root/ubuntu-amd64 vm ubuntu
-  openstack image create --disk-format qcow2 --container-format bare --private --tag amphora --file /root/ubuntu-amd64.qcow2 amphora-x64-haproxy
-  openstack flavor create --id 200 --vcpus 1 --ram 1024 --disk 2 "amphora" --private
-
-  create_certificates_octavia
-  # create_sg_octavia   # TODO
-}
-
-finish(){
-  # After CMP1 & CMP2
-  openstack compute service list --service nova-compute
-  su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
-}
-
 prepare_basic
 prepare_packages
 prepare_etcd
-prepare_password
-prepare_percona
 prepare_keystone
 prepare_placement
 prepare_nova
 prepare_neutron
-finish
 prepare_glance
-prepare_octavia
