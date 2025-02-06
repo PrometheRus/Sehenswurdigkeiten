@@ -12,16 +12,20 @@ prepare_basic() {
 192.168.11.34 rabbitmq
 192.168.11.35 stat
 192.168.11.36 mysql
+192.168.11.37 gw
 EOF
 }
 
 prepare_packages() {
   dnf install -qy golang-github-prometheus-node-exporter centos-release-openstack-zed libvirt
+
+  prepare_etcd
+
   systemctl enable --now prometheus-node-exporter.service
 
-  # Install Neutron
+  # Install Neutron OVS
   dnf install -qy openstack-neutron-openvswitch
-  systemctl enable --now neutron-openvswitch-agent
+  systemctl enable --now openvswitch
 
   # Install Nova
   dnf install -qy openstack-nova-compute
@@ -34,7 +38,7 @@ prepare_etcd() {
 ETCD_NAME=$(hostname)
 ETCD_LISTEN_PEER_URLS="http://$(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1):2380"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="http://$(hostname):2380"
-ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380"
+ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380,gw=http://gw:2380"
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
 ETCD_ADVERTISE_CLIENT_URLS="http://localhost:2379"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379"
@@ -135,7 +139,7 @@ EOF
   systemctl enable --now libvirtd.service openstack-nova-compute.service
 }
 
-prepare_neutron() {
+prepare_neutron_common() {
   # https://docs.openstack.org/neutron/latest/install/compute-install-option2-rdo.html
   tee /etc/neutron/neutron.conf > /dev/null <<EOF
 [DEFAULT]
@@ -146,14 +150,16 @@ use_journal = true
 lock_path = /var/lib/neutron/tmp
 
 EOF
+}
 
-  # OVS
+prepare_neutron_ovs() {
   ovs-vsctl add-br br-demo
   ovs-vsctl add-port br-demo eth1
+
   tee /etc/neutron/plugins/ml2/openvswitch_agent.ini > /dev/null <<EOF
 [ovs]
 bridge_mappings = provider:br-demo
-local_ip = 192.168.12.10
+local_ip = $(ip -4 -br ad show dev eth1 | awk '{print $3}' | cut -d'/' -f1)
 
 [agent]
 tunnel_types = vxlan
@@ -168,10 +174,26 @@ EOF
   systemctl enable --now neutron-openvswitch-agent
 }
 
+prepare_nova_network() {
+  tee -a /etc/nova/nova.conf > /dev/null <<EOF
+[neutron]
+auth_url = http://controller:5000
+auth_type = password
+project_domain_name = Default
+user_domain_name = Default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = $(etcdctl get NEUTRON_PASS --print-value-only)
+EOF
+  systemctl restart openstack-nova-compute.service
+}
+
 prepare_basic
 prepare_packages
 # Ждать, пока поднимется rabbitmq. В будущем можно заменить на проверку курлом
-sleep 200s;
-prepare_etcd
+sleep 400s;
 prepare_nova
-prepare_neutron
+prepare_neutron_common
+prepare_neutron_ovs
+prepare_nova_network

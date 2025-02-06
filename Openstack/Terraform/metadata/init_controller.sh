@@ -12,29 +12,38 @@ prepare_basic() {
 192.168.11.34 rabbitmq
 192.168.11.35 stat
 192.168.11.36 mysql
+192.168.11.37 gw
 EOF
 }
 
 prepare_packages() {
   dnf install -qy dnf-plugins-core golang-github-prometheus-node-exporter centos-release-openstack-zed
   dnf config-manager --set-enabled crb
+
+  prepare_etcd
+
   systemctl enable --now prometheus-node-exporter.service
 
   # Install Keystone
   dnf install -qy openstack-keystone httpd python3-mod_wsgi
 
-  # Install Neutron
-  dnf install -qy openstack-neutron openstack-neutron-ml2 openstack-neutron-openvswitch ebtables
-  systemctl enable --now neutron-openvswitch-agent
-
   # Install Nova
   dnf -qy install openstack-nova-api openstack-nova-conductor openstack-nova-novncproxy openstack-nova-scheduler
+
+  # Install Neutron-server
+  dnf install -qy openstack-neutron
+
+  # Install ml2
+  dnf install -qy openstack-neutron-ml2
 
   # Install Placement
   dnf -qy install openstack-placement-api
 
   # Install Glance
   dnf -qy install openstack-glance
+
+  # Install Openstack CLI
+  dnf -qy install python3-openstackclient openstack-selinux
 
   # Update system packages
   dnf update -qy
@@ -47,7 +56,7 @@ prepare_etcd() {
 ETCD_NAME=$(hostname)
 ETCD_LISTEN_PEER_URLS="http://$(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1):2380"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="http://$(hostname):2380"
-ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380"
+ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380,gw=http://gw:2380"
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
 ETCD_ADVERTISE_CLIENT_URLS="http://localhost:2379"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379"
@@ -271,7 +280,7 @@ EOF
   systemctl enable --now openstack-nova-api openstack-nova-scheduler openstack-nova-conductor openstack-nova-novncproxy
 }
 
-prepare_neutron() {
+prerequisites_neutron() {
   source /root/admin-openrc
 
   openstack user create --domain default --password "$(etcdctl get NEUTRON_PASS --print-value-only)" neutron
@@ -279,9 +288,9 @@ prepare_neutron() {
   openstack role add --project service --user neutron admin
   openstack service create --name neutron --description "OpenStack Networking" network
   for val in public internal admin; do openstack endpoint create --region RegionOne network ${val} http://controller:9696; done
-  ovs-vsctl add-br br-demo
-  ovs-vsctl add-port br-demo eth1
+}
 
+prepare_neutron_server() {
   tee /etc/neutron/neutron.conf > /dev/null <<EOF
 [DEFAULT]
 core_plugin = ml2
@@ -319,84 +328,15 @@ password = $(etcdctl get NOVA_PASS --print-value-only)
 lock_path = /var/lib/neutron/tmp
 
 EOF
-
-  tee /etc/neutron/plugins/ml2/ml2_conf.ini > /dev/null <<EOF
-[ml2]
-type_drivers = flat,vlan,vxlan
-tenant_network_types = vxlan
-mechanism_drivers = openvswitch,l2population
-extension_drivers = port_security
-
-[ml2_type_flat]
-flat_networks = provider
-vni_ranges = 1:1000
-
-EOF
-
-  tee /etc/neutron/plugins/ml2/openvswitch_agent.ini > /dev/null <<EOF
-[ovs]
-bridge_mappings = provider:br-demo
-local_ip = 192.168.12.10
-
-[agent]
-tunnel_types = vxlan
-l2_population = true
-
-[securitygroup]
-enable_security_group = true
-firewall_driver = openvswitch
-#firewall_driver = iptables_hybrid # TODO
-
-EOF
-
-  tee /etc/neutron/l3_agent.ini > /dev/null <<EOF
-[DEFAULT]
-interface_driver = openvswitch
-
-EOF
-
-  tee /etc/neutron/dhcp_agent.ini > /dev/null <<EOF
-interface_driver = openvswitch
-dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
-enable_isolated_metadata = true
-
-EOF
-
-  tee /etc/neutron/metadata_agent.ini > /dev/null <<EOF
-[DEFAULT]
-nova_metadata_host = controller
-metadata_proxy_shared_secret = $(etcdctl get METADATA_SECRET --print-value-only)
-
-EOF
-
-  tee -a /etc/nova/nova.conf > /dev/null <<EOF
-
-[neutron]
-auth_url = http://controller:5000
-auth_type = password
-project_domain_name = Default
-user_domain_name = Default
-region_name = RegionOne
-project_name = service
-username = neutron
-password = $(etcdctl get NEUTRON_PASS --print-value-only)
-service_metadata_proxy = true
-metadata_proxy_shared_secret = $(etcdctl get METADATA_SECRET --print-value-only)
-EOF
-
   ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
-  su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
-  --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
 
-    # Neutron
-  systemctl enable --now neutron-server neutron-openvswitch-agent neutron-dhcp-agent neutron-metadata-agent
+  systemctl enable --now neutron-server
+}
 
-  # L3
-  systemctl enable --now neutron-l3-agent.service
-
+discover_hosts() {
   # After CMP1 & CMP2
-  openstack compute service list --service nova-compute
   su -s /bin/sh -c "nova-manage cell_v2 discover_hosts --verbose" nova
+  openstack compute service list --service nova-compute
 }
 
 prepare_glance() {
@@ -404,7 +344,9 @@ prepare_glance() {
   openstack role add --project service --user glance admin
   openstack service create --name glance --description "OpenStack Image" image
   for val in public internal admin; do openstack endpoint create --region RegionOne image ${val} http://controller:9292; done
+
   # Register quota limits (optional) (TODO)
+
   tee /etc/glance/glance-api.conf > /dev/null <<EOF
 [database]
 # use_keystone_limits = True    (optional)
@@ -441,6 +383,7 @@ system_scope = all
 endpoint_id = $(openstack endpoint list --service glance --region RegionOne --interface public -c ID -f value)
 region_name = RegionOne
 EOF
+
   openstack role add --user glance --user-domain Default --system all reader
   su -s /bin/sh -c "glance-manage db_sync" glance
   systemctl enable --now openstack-glance-api.service
@@ -448,9 +391,10 @@ EOF
 
 prepare_basic
 prepare_packages
-prepare_etcd
 prepare_keystone
 prepare_placement
 prepare_nova
-prepare_neutron
+prerequisites_neutron
+prepare_neutron_server
+discover_hosts
 prepare_glance

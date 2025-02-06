@@ -6,6 +6,7 @@ module "vm_controller" {
   first_port_id  = module.controller_ports.first_port_id
   second_port_id = module.controller_ports.second_port_id
   user_data      = "init_controller.sh"
+  flavor_id      = var.flavor_id
 }
 
 module "vm_cmp1" {
@@ -19,7 +20,7 @@ module "vm_cmp1" {
 
 module "vm_cmp2" {
   source         = "../../modules/nova/compute"
-  hostname       = "cmp1"
+  hostname       = "cmp2"
   key_pair       = var.service-ssh-key-name
   first_port_id  = module.cmp2_ports.first_port_id
   second_port_id = module.cmp2_ports.second_port_id
@@ -44,6 +45,15 @@ module "vm_rabbitmq" {
   user_data      = "init_rabbitmq.sh"
 }
 
+module "vm_stat" {
+  source         = "../../modules/nova/compute"
+  hostname       = "stat"
+  key_pair       = var.service-ssh-key-name
+  first_port_id  = module.stat_ports.first_port_id
+  second_port_id = module.stat_ports.second_port_id
+  user_data      = "init_stat.sh"
+}
+
 module "vm_mysql" {
   source         = "../../modules/nova/compute"
   hostname       = "mysql"
@@ -51,4 +61,13 @@ module "vm_mysql" {
   first_port_id  = module.mysql_ports.first_port_id
   second_port_id = module.mysql_ports.second_port_id
   user_data      = "init_mysql.sh"
+}
+
+module "vm_gw" {
+  source         = "../../modules/nova/compute"
+  hostname       = "gw"
+  key_pair       = var.service-ssh-key-name
+  first_port_id  = module.gw_ports.first_port_id
+  second_port_id = module.gw_ports.second_port_id
+  user_data      = "init_gw.sh"
 }

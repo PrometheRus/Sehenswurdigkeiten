@@ -18,6 +18,14 @@ output "rabbitmq" {
   value = module.float_rabbitmq.floatingip_address
 }
 
+output "stat" {
+  value = module.float_stat.floatingip_address
+}
+
 output "mysql" {
   value = module.float_mysql.floatingip_address
+}
+
+output "gw" {
+  value = module.float_gw.floatingip_address
 }

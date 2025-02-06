@@ -18,12 +18,22 @@ module "float_grafana" {
   port_id = module.grafana_ports.first_port_id
 }
 
+module "float_rabbitmq" {
+  source = "../../modules/neutron/float"
+  port_id = module.rabbitmq_ports.first_port_id
+}
+
+module "float_stat" {
+  source = "../../modules/neutron/float"
+  port_id = module.stat_ports.first_port_id
+}
+
 module "float_mysql" {
   source = "../../modules/neutron/float"
   port_id = module.mysql_ports.first_port_id
 }
 
-module "float_rabbitmq" {
+module "float_gw" {
   source = "../../modules/neutron/float"
-  port_id = module.rabbitmq_ports.first_port_id
+  port_id = module.gw_ports.first_port_id
 }

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Test: success
+
 prepare_basic() {
   timedatectl set-timezone Europe/Moscow
   # dnf install -qy nmap telnet openssl
@@ -12,12 +14,16 @@ prepare_basic() {
 192.168.11.34 rabbitmq
 192.168.11.35 stat
 192.168.11.36 mysql
+192.168.11.37 gw
 EOF
 }
 
 prepare_packages() {
   dnf install -qy dnf-plugins-core golang-github-prometheus-node-exporter centos-release-openstack-zed
   dnf config-manager --set-enabled crb
+
+  prepare_etcd
+
   systemctl enable --now prometheus-node-exporter.service
 
   # Install Percona
@@ -36,7 +42,7 @@ prepare_etcd() {
 ETCD_NAME=$(hostname)
 ETCD_LISTEN_PEER_URLS="http://$(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1):2380"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="http://$(hostname):2380"
-ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380"
+ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380,gw=http://gw:2380"
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
 ETCD_ADVERTISE_CLIENT_URLS="http://localhost:2379"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379"
@@ -60,7 +66,6 @@ EOF
 prepare_password () {
   MYSQL_PASS="$(cat /dev/urandom | tr -dc '[:alnum:]' | head -c 20)!"
   etcdctl put MYSQL_PASS $MYSQL_PASS
-
   ADMIN_PASS="$(openssl rand -hex 8)"
   GLANCE_PASS="$(openssl rand -hex 8)";
   NEUTRON_PASS="$(openssl rand -base64 8)"
@@ -69,7 +74,7 @@ prepare_password () {
   OCTAVIA_PASS="$(openssl rand -hex 8)";
   METADATA_SECRET="$(openssl rand -hex 8)";
   DEMO_USER_PASS="$(openssl rand -hex 8)";
-  RABBIT_PASS="$(openssl rand -hex 8)";
+
 
   etcdctl put ADMIN_PASS $ADMIN_PASS
   etcdctl put GLANCE_PASS $GLANCE_PASS;
@@ -79,7 +84,6 @@ prepare_password () {
   etcdctl put OCTAVIA_PASS $OCTAVIA_PASS
   etcdctl put METADATA_SECRET $METADATA_SECRET
   etcdctl put DEMO_USER_PASS $DEMO_USER_PASS;
-  etcdctl put RABBIT_PASS $RABBIT_PASS;
 }
 
 prepare_percona() {
@@ -127,6 +131,5 @@ EOF
 
 prepare_basic
 prepare_packages
-prepare_etcd
 prepare_password
 prepare_percona

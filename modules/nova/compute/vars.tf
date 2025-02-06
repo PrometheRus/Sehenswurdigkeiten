@@ -3,9 +3,9 @@ variable "hostname" {
   type = string
 }
 
-# openstack flavor show PRC10.2-2048 -c id -f value
+# openstack flavor show PRC20.2-2048 -c id -f value
 variable "flavor_id" {
-  default = "9013"
+  default = "9023"
   type = string
 }
 

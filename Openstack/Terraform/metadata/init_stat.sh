@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Test: success
+
 prepare_basic() {
   timedatectl set-timezone Europe/Moscow
   # dnf install -qy nmap telnet openssl
@@ -12,12 +14,16 @@ prepare_basic() {
 192.168.11.34 rabbitmq
 192.168.11.35 stat
 192.168.11.36 mysql
+192.168.11.37 gw
 EOF
 }
 
 prepare_packages() {
   dnf install -qy dnf-plugins-core golang-github-prometheus-node-exporter centos-release-openstack-zed
   dnf config-manager --set-enabled crb
+
+  prepare_etcd
+
   systemctl enable --now prometheus-node-exporter.service
 
   # Install Gnocchi
@@ -35,7 +41,7 @@ prepare_etcd() {
 ETCD_NAME=$(hostname)
 ETCD_LISTEN_PEER_URLS="http://$(ip -4 -br ad show dev eth0 | awk '{print $3}' | cut -d'/' -f1):2380"
 ETCD_INITIAL_ADVERTISE_PEER_URLS="http://$(hostname):2380"
-ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380"
+ETCD_INITIAL_CLUSTER="mysql=http://mysql:2380,rabbitmq=http://rabbitmq:2380,controller=http://controller:2380,cmp1=http://cmp1:2380,cmp2=http://cmp2:2380,grafana=http://grafana:2380,stat=http://stat:2380,gw=http://gw:2380"
 ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster"
 ETCD_ADVERTISE_CLIENT_URLS="http://localhost:2379"
 ETCD_LISTEN_CLIENT_URLS="http://localhost:2379"
@@ -67,3 +73,7 @@ prepare_ceilometer() {
 
   for val in public internal admin; do openstack endpoint create --region RegionOne metric ${val} http://controller:8041; done
 }
+
+prepare_basic
+prepare_packages
+# prepare_ceilometer

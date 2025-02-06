@@ -1,60 +1,29 @@
-resource "openstack_networking_port_v2" "controller_1" {
-  name       = "controller-port1"
+module "controller_ports" {
+  source = "../../modules/neutron/port"
+  instance_name = "controller"
   network_id = openstack_networking_network_v2.network_devstack.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_1.id
-    ip_address = "192.168.11.10"
-  }
+  first_subnet_id = openstack_networking_subnet_v2.subnet_1.id
+  second_subnet_id = openstack_networking_subnet_v2.subnet_2.id
+  first_subnet_ip = "192.168.11.10"
+  second_subnet_ip = "192.168.12.10"
 }
 
-resource "openstack_networking_port_v2" "controller_2" {
-  name       = "controller-port2"
+module "cmp1_ports" {
+  source = "../../modules/neutron/port"
+  instance_name = "cmp1"
   network_id = openstack_networking_network_v2.network_devstack.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_2.id
-    ip_address = "192.168.12.10"
-  }
+  first_subnet_id = openstack_networking_subnet_v2.subnet_1.id
+  second_subnet_id = openstack_networking_subnet_v2.subnet_2.id
+  first_subnet_ip = "192.168.11.11"
+  second_subnet_ip = "192.168.12.11"
 }
 
-resource "openstack_networking_port_v2" "port_1_cmp1" {
-  name       = "cmp1-port1-internet"
+module "cmp2_ports" {
+  source = "../../modules/neutron/port"
+  instance_name = "cmp2"
   network_id = openstack_networking_network_v2.network_devstack.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_1.id
-    ip_address = "192.168.11.11"
-  }
-}
-
-resource "openstack_networking_port_v2" "port_2_cmp1" {
-  name       = "cmp1-port2-ovs"
-  network_id = openstack_networking_network_v2.network_devstack.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_2.id
-    ip_address = "192.168.12.11"
-  }
-}
-
-
-resource "openstack_networking_port_v2" "port_1_cmp2" {
-  name       = "cmp2-port1"
-  network_id = openstack_networking_network_v2.network_devstack.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_1.id
-    ip_address = "192.168.11.12"
-  }
-}
-
-resource "openstack_networking_port_v2" "port_2_cmp2" {
-  name       = "cmp2-port2"
-  network_id = openstack_networking_network_v2.network_devstack.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_2.id
-    ip_address = "192.168.12.12"
-  }
+  first_subnet_id = openstack_networking_subnet_v2.subnet_1.id
+  second_subnet_id = openstack_networking_subnet_v2.subnet_2.id
+  first_subnet_ip = "192.168.11.12"
+  second_subnet_ip = "192.168.12.12"
 }

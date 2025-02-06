@@ -1,11 +1,11 @@
 output "controller" {
-  value = openstack_networking_floatingip_v2.controller.address
+  value = module.float_controller.floatingip_address
 }
 
 output "cmp1" {
-  value = openstack_networking_floatingip_v2.cmp1.address
+  value = module.float_cmp1.floatingip_address
 }
 
 output "cmp2" {
-  value = openstack_networking_floatingip_v2.cmp2.address
+  value = module.float_cmp2.floatingip_address
 }

@@ -1,6 +1,6 @@
-# openstack flavor show PRC10.2-2048 -c id -f value
+# openstack flavor show CPU1.4-8192 -c id -f value
 variable "flavor_id" {
-  default     = "9013"
+  default     = "2011"
   type        = string
   description = "The ID of the flavor to use"
 }
