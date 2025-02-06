@@ -131,6 +131,21 @@ vni_ranges =10000:60000
 [agent]
 l2_population = True
 
+# Добавил, так как, как будто, Openstack не читал файл из prepare_ovs_agent
+[ovs]
+integration_bridge = br-int
+tunnel_bridge = br-tun
+bridge_mappings = provider:br-demo
+local_ip = $(ip -4 -br ad show dev eth1 | awk '{print $3}' | cut -d'/' -f1)
+
+[agent]
+tunnel_types = vxlan
+l2_population = true
+
+[securitygroup]
+enable_security_group = true
+firewall_driver = openvswitch
+#firewall_driver = iptables_hybrid # TODO
 EOF
 }
 
@@ -193,10 +208,10 @@ finalize() {
   ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
 
   su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf \
-  --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
+  --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutronq
 
   # Server
-  systemctl enable --now neutron-server neutron-openvswitch-agent
+  systemctl enable --now neutron-server
 
   # OVS
   systemctl enable --now neutron-openvswitch-agent
