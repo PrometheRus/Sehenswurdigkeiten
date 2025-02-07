@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -fv /etc/yum.repos.d/epel-testing.repo
+
 # Test: success
 
 prepare_basic() {

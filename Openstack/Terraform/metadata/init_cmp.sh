@@ -1,5 +1,7 @@
 #!/bin/bash
 
+rm -fv /etc/yum.repos.d/epel-testing.repo
+
 prepare_basic() {
   timedatectl set-timezone Europe/Moscow
   # dnf install -qy nmap telnet openssl

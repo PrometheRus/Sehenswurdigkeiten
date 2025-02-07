@@ -387,6 +387,9 @@ EOF
   openstack role add --user glance --user-domain Default --system all reader
   su -s /bin/sh -c "glance-manage db_sync" glance
   systemctl enable --now openstack-glance-api.service
+
+  wget -O /root/AlmaLinux-9-GenericCloud-9.5-20241120.x86_64.qcow2https://repo.almalinux.org/almalinux/9/cloud/x86_64/images/AlmaLinux-9-GenericCloud-9.5-20241120.x86_64.qcow2
+  openstack image create --file /root/AlmaLinux-9-GenericCloud-9.5-20241120.x86_64.qcow2 --disk-format qcow2 --container-format bare --public 'Alma Linux 9 64-bit'
 }
 
 prepare_basic
