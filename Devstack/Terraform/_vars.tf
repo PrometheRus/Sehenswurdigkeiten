@@ -7,7 +7,7 @@ variable "flavor_id" {
 
 # openstack image show "Ubuntu 24.04 LTS 64-bit" -c id -f value
 variable "image_id" {
-  default     = "6e3ab1ff-ebd6-4699-a986-d159e332c346"
+  default     = "c19567d7-e822-42b0-a0cf-39f0436482af"
   type        = string
   description = "The ID of the image to use"
 }
