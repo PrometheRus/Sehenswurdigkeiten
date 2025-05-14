@@ -1,0 +1,1 @@
+Someday here will be (maybe) lot's of ve-e-e-e-ry smart writings.
