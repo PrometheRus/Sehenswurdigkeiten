@@ -4,6 +4,12 @@ resource "selectel_vpc_keypair_v2" "keypair_1" {
   user_id = var.service-account-id
 }
 
+data "openstack_images_image_v2" "image" {
+  name        = "Alma Linux 9 64-bit"
+  most_recent = true
+  depends_on = [selectel_vpc_project_v2.new_project]
+}
+
 resource "openstack_compute_instance_v2" "server_1" {
   name              = "server1"
   flavor_id         = var.flavor_id
@@ -16,7 +22,7 @@ resource "openstack_compute_instance_v2" "server_1" {
   }
 
   block_device {
-    uuid                  = var.image_id
+    uuid                  = data.openstack_images_image_v2.image.id
     volume_size           = var.volume_size
     source_type           = "image"
     boot_index            = 0
@@ -37,7 +43,7 @@ resource "openstack_compute_instance_v2" "server_2" {
   }
 
   block_device {
-    uuid                  = var.image_id
+    uuid                  = data.openstack_images_image_v2.image.id
     volume_size           = var.volume_size
     source_type           = "image"
     boot_index            = 0
@@ -58,7 +64,7 @@ resource "openstack_compute_instance_v2" "server_3" {
   }
 
   block_device {
-    uuid                  = var.image_id
+    uuid                  = data.openstack_images_image_v2.image.id
     volume_size           = var.volume_size
     source_type           = "image"
     boot_index            = 0

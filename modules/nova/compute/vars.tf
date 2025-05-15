@@ -15,22 +15,20 @@ variable "availability_zone" {
   description = "The availability zone to use"
 }
 
-# openstack image show "Alma Linux 9 64-bit" -c id -f value
 variable "image_id" {
-  default     = "de41300f-f49d-4d95-a988-3fd3db1e9e4e" # Alma9
+  default     = "image_id"
   type        = string
   description = "The ID of the image to use"
 }
 
 variable "volume_size" {
-  default     = "20"
+  default     = "40"
   type        = string
   description = "The volume size to use"
 }
 
 variable "key_pair" {
-  default     = "<name>"
-  description = "Type the command and get the name: 'openstack keypair list'"
+  default     = "key_pair"
   type        = string
   sensitive   = true
 }

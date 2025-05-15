@@ -1,153 +1,61 @@
-resource "openstack_compute_instance_v2" "mgr1" {
-  name              = "mgr1"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_osd.sh")
-
-  network {
-    port = openstack_networking_port_v2.port_1_mgr1.id
-  }
-
-  network {
-    port = openstack_networking_port_v2.port_2_mgr1.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  tags = ["preemptible"]
+data "openstack_images_image_v2" "image" {
+  name        = "Alma Linux 9 64-bit"
+  most_recent = true
+  depends_on  = [selectel_vpc_project_v2.new_project]
 }
 
-resource "openstack_compute_instance_v2" "osd1" {
-  name              = "osd1"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_osd.sh")
-
-  network {
-    port = openstack_networking_port_v2.port_1_osd1.id
-  }
-
-  network {
-    port = openstack_networking_port_v2.port_2_osd1.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  block_device {
-    volume_size           = var.ceph_volume_size
-    source_type           = "blank"
-    boot_index            = 1
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  tags = ["preemptible"]
+resource "selectel_vpc_keypair_v2" "demo_keypair" {
+  name    = "demo_keypair"
+  public_key = file("~/.ssh/virt.pub")
+  user_id = selectel_iam_serviceuser_v1.new_admin.id
 }
 
-resource "openstack_compute_instance_v2" "osd2" {
-  name              = "osd2"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_osd.sh")
-
-  network {
-    port = openstack_networking_port_v2.port_1_osd2.id
-  }
-
-  network {
-    port = openstack_networking_port_v2.port_2_osd2.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  block_device {
-    volume_size           = var.ceph_volume_size
-    source_type           = "blank"
-    boot_index            = 1
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  tags = ["preemptible"]
+module "vm_mgr1" {
+  hostname       = "mgr1"
+  image_id       = data.openstack_images_image_v2.image
+  key_pair       = selectel_vpc_keypair_v2.demo_keypair
+  first_port_id  = module.mgr1_ports.first_port_id
+  second_port_id = module.mgr1_ports.second_port_id
+  source         = "../../modules/nova/compute"
+  user_data      = "init_osd.sh"
 }
 
-resource "openstack_compute_instance_v2" "osd3" {
-  name              = "osd3"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  user_data         = file("./metadata/init_osd.sh")
-
-  network {
-    port = openstack_networking_port_v2.port_1_osd3.id
-  }
-
-  network {
-    port = openstack_networking_port_v2.port_2_osd3.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  block_device {
-    volume_size           = var.ceph_volume_size
-    source_type           = "blank"
-    boot_index            = 1
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
+module "vm_osd1" {
+  hostname       = "osd1"
+  image_id       = data.openstack_images_image_v2.image
+  key_pair       = selectel_vpc_keypair_v2.demo_keypair
+  first_port_id  = module.osd1_ports.first_port_id
+  second_port_id = module.osd1_ports.second_port_id
+  source         = "../../modules/nova/compute"
+  user_data      = "init_osd.sh"
 }
 
-resource "openstack_compute_instance_v2" "grafana" {
-  name              = "srv"
-  flavor_id         = var.flavor_prc
-  key_pair          = var.service-ssh-key-name
-  availability_zone = var.availability_zone
-  #user_data         = file("./metadata/init_grafana.sh")
+module "vm_osd2" {
+  hostname       = "osd2"
+  image_id       = data.openstack_images_image_v2.image
+  key_pair       = selectel_vpc_keypair_v2.demo_keypair
+  first_port_id  = module.osd2_ports.first_port_id
+  second_port_id = module.osd2_ports.second_port_id
+  source         = "../../modules/nova/compute"
+  user_data      = "init_osd.sh"
+}
 
+module "vm_osd3" {
+  hostname       = "osd2"
+  image_id       = data.openstack_images_image_v2.image
+  key_pair       = selectel_vpc_keypair_v2.demo_keypair
+  first_port_id  = module.osd3_ports.first_port_id
+  second_port_id = module.osd3_ports.second_port_id
+  source         = "../../modules/nova/compute"
+  user_data      = "init_osd.sh"
+}
 
-  network {
-    port = openstack_networking_port_v2.port_1_grafana.id
-  }
-
-  block_device {
-    uuid                  = var.image_id
-    volume_size           = var.volume_size
-    source_type           = "image"
-    boot_index            = 0
-    destination_type      = "volume"
-    delete_on_termination = true
-  }
-
-  tags = ["preemptible"]
+module "vm_grafana" {
+  hostname       = "grafana"
+  image_id       = data.openstack_images_image_v2.image
+  key_pair       = selectel_vpc_keypair_v2.demo_keypair
+  first_port_id  = module.grafana_ports.first_port_id
+  second_port_id = module.grafana_ports.second_port_id
+  source         = "../../modules/nova/compute"
+  user_data      = "init_grafana.sh"
 }

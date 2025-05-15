@@ -24,7 +24,6 @@ terraform {
   }
 }
 
-# Init selectel provider
 provider "selectel" {
   auth_url    = "https://cloud.api.selcloud.ru/identity/v3/"
   domain_name = var.domain
@@ -34,12 +33,12 @@ provider "selectel" {
 }
 
 resource "selectel_vpc_project_v2" "new_project" {
-  name = var.project-name
+  name = "personal-temp-project"
 }
 
 resource "selectel_iam_serviceuser_v1" "new_admin" {
-  name     = var.temp-service-account-name
-  password = var.temp-service-account-password
+  name     = "personal-temp-admin"
+  password = var.service-account-password
   role {
     role_name = "member"
     scope     = "project"
@@ -51,8 +50,8 @@ resource "selectel_iam_serviceuser_v1" "new_admin" {
 provider "openstack" {
   auth_url    = "https://cloud.api.selcloud.ru/identity/v3"
   domain_name = var.domain
-  tenant_id   = var.project-id
-  user_name   = var.service-account-name
-  password    = var.service-account-password
+  tenant_id   = selectel_vpc_project_v2.new_project.id
+  user_name   = selectel_iam_serviceuser_v1.new_admin.name
+  password    = selectel_iam_serviceuser_v1.new_admin.password
   region      = var.auth_region
 }

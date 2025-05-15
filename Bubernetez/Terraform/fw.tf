@@ -22,8 +22,8 @@ resource "openstack_fw_rule_v2" "rule_3" {
   destination_ip_address = "0.0.0.0/0"
 }
 
-resource "openstack_fw_rule_v2" "rule_home" {
-  name                   = "allow-home"
+resource "openstack_fw_rule_v2" "rule_ISP" {
+  name                   = "allow-ISP"
   action                 = "allow"
   protocol               = "tcp"
   source_ip_address      = "185.97.200.0/22"
@@ -34,7 +34,7 @@ resource "openstack_fw_policy_v2" "firewall_ingress_1" {
   name    = "ingress-firewall-policy"
   audited = true
   rules = [
-    openstack_fw_rule_v2.rule_1.id, openstack_fw_rule_v2.rule_2.id, openstack_fw_rule_v2.rule_home.id
+    openstack_fw_rule_v2.rule_1.id, openstack_fw_rule_v2.rule_2.id, openstack_fw_rule_v2.rule_ISP.id
   ]
 }
 

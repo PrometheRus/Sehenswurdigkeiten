@@ -1,89 +1,49 @@
-resource "openstack_networking_port_v2" "port_1_mgr1" {
-  name       = "mgr1-port-internet"
+module "mgr1_ports" {
+  source = "../../modules/neutron/port"
+  instance_name = "mgr1"
   network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_1.id
-    ip_address = "192.168.11.20"
-  }
+  first_subnet_id = openstack_networking_subnet_v2.subnet_1.id
+  second_subnet_id = openstack_networking_subnet_v2.subnet_2.id
+  first_subnet_ip = "192.168.11.10"
+  second_subnet_ip = "192.168.12.10"
 }
 
-resource "openstack_networking_port_v2" "port_2_mgr1" {
-  name       = "mgr1-port-internal"
+module "osd1_ports" {
+  source = "../../modules/neutron/port"
+  instance_name = "osd1"
   network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_2.id
-    ip_address = "192.168.12.20"
-  }
+  first_subnet_id = openstack_networking_subnet_v2.subnet_1.id
+  second_subnet_id = openstack_networking_subnet_v2.subnet_2.id
+  first_subnet_ip = "192.168.11.11"
+  second_subnet_ip = "192.168.12.11"
 }
 
-resource "openstack_networking_port_v2" "port_1_osd1" {
-  name       = "osd1-port-internet"
+module "osd2_ports" {
+  source = "../../modules/neutron/port"
+  instance_name = "osd2"
   network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_1.id
-    ip_address = "192.168.11.21"
-  }
+  first_subnet_id = openstack_networking_subnet_v2.subnet_1.id
+  second_subnet_id = openstack_networking_subnet_v2.subnet_2.id
+  first_subnet_ip = "192.168.11.12"
+  second_subnet_ip = "192.168.12.12"
 }
 
-resource "openstack_networking_port_v2" "port_2_osd1" {
-  name       = "osd1-port-internal"
+module "osd3_ports" {
+  source = "../../modules/neutron/port"
+  instance_name = "osd3"
   network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_2.id
-    ip_address = "192.168.12.21"
-  }
+  first_subnet_id = openstack_networking_subnet_v2.subnet_1.id
+  second_subnet_id = openstack_networking_subnet_v2.subnet_2.id
+  first_subnet_ip = "192.168.11.13"
+  second_subnet_ip = "192.168.12.13"
 }
 
-resource "openstack_networking_port_v2" "port_1_osd2" {
-  name       = "osd2-port-internet"
+module "grafana_ports" {
+  source = "../../modules/neutron/port"
+  instance_name = "grafana"
   network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_1.id
-    ip_address = "192.168.11.22"
-  }
-}
-
-resource "openstack_networking_port_v2" "port_2_osd2" {
-  name       = "osd2-port-internal"
-  network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_2.id
-    ip_address = "192.168.12.22"
-  }
-}
-
-resource "openstack_networking_port_v2" "port_1_osd3" {
-  name       = "osd3-port-internet"
-  network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_1.id
-    ip_address = "192.168.11.23"
-  }
-}
-
-resource "openstack_networking_port_v2" "port_2_osd3" {
-  name       = "osd3-port-internal"
-  network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_2.id
-    ip_address = "192.168.12.23"
-  }
-}
-
-resource "openstack_networking_port_v2" "port_1_grafana" {
-  name       = "grafana-port-internet"
-  network_id = openstack_networking_network_v2.ceph_network.id
-
-  fixed_ip {
-    subnet_id  = openstack_networking_subnet_v2.subnet_1.id
-    ip_address = "192.168.11.40"
-  }
+  first_subnet_id = openstack_networking_subnet_v2.subnet_1.id
+  second_subnet_id = openstack_networking_subnet_v2.subnet_2.id
+  first_subnet_ip = "192.168.11.20"
+  second_subnet_ip = "192.168.12.20"
 }

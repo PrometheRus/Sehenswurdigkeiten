@@ -4,6 +4,12 @@ resource "selectel_vpc_keypair_v2" "demo_keypair" {
   user_id = selectel_iam_serviceuser_v1.new_admin.id
 }
 
+data "openstack_images_image_v2" "image" {
+  name        = "Alma Linux 9 64-bit"
+  most_recent = true
+  depends_on = [selectel_vpc_project_v2.new_project]
+}
+
 resource "openstack_compute_instance_v2" "grafana" {
   name              = "grafana"
   flavor_id         = var.flavor_prc
@@ -16,7 +22,7 @@ resource "openstack_compute_instance_v2" "grafana" {
   }
 
   block_device {
-    uuid                  = var.image_id
+    uuid                  = data.openstack_images_image_v2.image.id
     volume_size           = var.volume_size
     source_type           = "image"
     boot_index            = 0
@@ -37,7 +43,7 @@ resource "openstack_compute_instance_v2" "prometheus" {
   }
 
   block_device {
-    uuid                  = var.image_id
+    uuid                  = data.openstack_images_image_v2.image.id
     volume_size           = var.volume_size
     source_type           = "image"
     boot_index            = 0
@@ -58,7 +64,7 @@ resource "openstack_compute_instance_v2" "docker" {
   }
 
   block_device {
-    uuid                  = var.image_id
+    uuid                  = data.openstack_images_image_v2.image.id
     volume_size           = var.volume_size
     source_type           = "image"
     boot_index            = 0
