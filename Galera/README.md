@@ -13,10 +13,6 @@ service-ssh-key-name            = "<name>"
 service-account-name            = "<project-admin-service-account-name>"
 service-account-password        = "<pass>"
 service-account-id              = "<id>"
-
-# New service account for Openstack provider
-temp-service-account-name       = "<temp-service-account-name>"
-temp-service-account-password   = "<temp-service-account-pass>"
 EOF
 ```
 #### Ваши секреты объектного хранилища для сохранения ```terraform.state``` удаленно (либо удалите полностью блок ```backend``` из ```main.tf``` - в этом случае state будет сохранен только локально):

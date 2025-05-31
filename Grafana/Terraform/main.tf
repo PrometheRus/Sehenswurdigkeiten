@@ -14,7 +14,7 @@ terraform {
     endpoints = {
       s3 = "https://s3.ru-1.storage.selcloud.ru"
     }
-    key    = var.s3key
+    key    = "terraform/grafana/terraform.tfstate"
     region = "ru-1"
 
     skip_region_validation      = true

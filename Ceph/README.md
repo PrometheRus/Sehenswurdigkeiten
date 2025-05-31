@@ -1,5 +1,6 @@
+```commandline
 ssh root@$(terraform output --raw osd1)
-
+```
 
 ```commandline
 tee secret.tfvars > /dev/null <<EOF

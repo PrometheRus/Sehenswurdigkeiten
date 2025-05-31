@@ -5,13 +5,6 @@ variable "flavor_id" {
   description = "The ID of the flavor to use"
 }
 
-# openstack image show "Alma Linux 9 64-bit" -c id -f value
-variable "image_id" {
-  default     = "de41300f-f49d-4d95-a988-3fd3db1e9e4e" # Alma9
-  type        = string
-  description = "The ID of the image to use"
-}
-
 variable "auth_region" {
   default     = "ru-9"
   type        = string

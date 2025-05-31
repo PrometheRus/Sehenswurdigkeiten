@@ -44,9 +44,3 @@ variable "service-account-id" {
   description = "The ID of the service account"
   sensitive   = true
 }
-
-variable "s3key" {
-  default = ""
-  type = string
-  sensitive = true
-}
