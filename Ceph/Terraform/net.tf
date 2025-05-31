@@ -23,6 +23,7 @@ resource "openstack_networking_subnet_v2" "subnet_2" {
 
 data "openstack_networking_network_v2" "external_ceph_network" {
   external = true
+  depends_on = [selectel_vpc_project_v2.new_project]
 }
 
 resource "openstack_networking_router_v2" "ceph_router" {

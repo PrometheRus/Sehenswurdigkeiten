@@ -36,9 +36,18 @@ resource "selectel_vpc_project_v2" "new_project" {
   name = "personal-temp-project"
 }
 
+resource "random_password" "password" {
+  length           = 20
+  special          = true
+  min_upper        = 3
+  min_lower        = 3
+  min_numeric      = 3
+  min_special      = 3
+}
+
 resource "selectel_iam_serviceuser_v1" "new_admin" {
-  name     = "personal-temp-admin"
-  password = var.service-account-password
+  name     = "devstack-temp-admin"
+  password = random_password.password.result
   role {
     role_name = "member"
     scope     = "project"

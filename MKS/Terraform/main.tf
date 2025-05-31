@@ -2,11 +2,11 @@ terraform {
   required_providers {
     selectel = {
       source  = "selectel/selectel"
-      version = "~> 6.0.0"
+      version = "~> 6.4.1"
     }
     openstack = {
       source  = "terraform-provider-openstack/openstack"
-      version = "3.0.0"
+      version = "3.1.0"
     }
   }
 
@@ -36,9 +36,14 @@ resource "selectel_vpc_project_v2" "new_project" {
   name = "mks-temp-project"
 }
 
+resource "random_password" "password" {
+  length  = 16
+  special = true
+}
+
 resource "selectel_iam_serviceuser_v1" "new_admin" {
   name     = "mks-temp-admin"
-  password = var.service-account-password
+  password = random_password.password.result
   role {
     role_name = "member"
     scope     = "project"
