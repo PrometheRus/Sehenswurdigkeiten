@@ -1,6 +1,6 @@
 data "selectel_mks_kube_versions_v1" "versions" {
   project_id = selectel_vpc_project_v2.new_project.id
-  region     = var.auth_region
+  region     = var.region
 }
 
 data "selectel_mks_kubeconfig_v1" "kubeconfig" {
@@ -15,7 +15,7 @@ resource "selectel_mks_cluster_v1" "basic_cluster" {
   name                              = "cluster-1"
   network_id                        = openstack_networking_network_v2.network_1.id
   project_id                        = selectel_vpc_project_v2.new_project.id
-  region                            = var.auth_region
+  region                            = var.region
   subnet_id                         = openstack_networking_subnet_v2.subnet_1.id
   zonal                             = true
 }
@@ -24,12 +24,12 @@ resource "selectel_mks_nodegroup_v1" "nodegroup_1" {
   cluster_id        = selectel_mks_cluster_v1.basic_cluster.id
   project_id        = selectel_mks_cluster_v1.basic_cluster.project_id
   region            = selectel_mks_cluster_v1.basic_cluster.region
-  availability_zone = var.availability_zone
+  availability_zone = "${var.region}a"
   nodes_count       = 2
   cpus              = 2
   ram_mb            = 4096
   volume_gb         = var.volume_size
-  volume_type       = "basic.${var.availability_zone}"
+  volume_type       = "basic.${var.region}a"
 
   install_nvidia_device_plugin = false
   preemptible                  = false

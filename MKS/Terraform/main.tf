@@ -2,7 +2,7 @@ terraform {
   required_providers {
     selectel = {
       source  = "selectel/selectel"
-      version = "~> 6.4.1"
+      version = "~> 6.5.0"
     }
     openstack = {
       source  = "terraform-provider-openstack/openstack"
@@ -19,34 +19,39 @@ terraform {
 
     skip_region_validation      = true
     skip_credentials_validation = true
-    skip_requesting_account_id  = true # Необходимая опция Terraform для версии 1.6.1 и старше.
+    skip_requesting_account_id = true # Необходимая опция Terraform для версии 1.6.1 и старше.
     skip_s3_checksum            = true # Необходимая опция при описании бэкенда для Terraform версии 1.6.3 и старше.
   }
 }
 
+# Init selectel provider
 provider "selectel" {
   auth_url    = "https://cloud.api.selcloud.ru/identity/v3/"
   domain_name = var.domain
   username    = var.service-account-name
   password    = var.service-account-password
-  auth_region = var.auth_region
+  auth_region = var.region
 }
 
 resource "selectel_vpc_project_v2" "new_project" {
-  name = "mks-temp-project"
+  name = "temporary-${var.project_name}-project"
 }
 
 resource "random_password" "password" {
-  length  = 16
-  special = true
+  length      = 20
+  special     = true
+  min_upper   = 3
+  min_lower   = 3
+  min_numeric = 3
+  min_special = 3
 }
 
 resource "selectel_iam_serviceuser_v1" "new_admin" {
-  name     = "mks-temp-admin"
+  name     = "temporary-${var.project_name}-admin"
   password = random_password.password.result
   role {
-    role_name = "member"
-    scope     = "project"
+    role_name  = "member"
+    scope      = "project"
     project_id = selectel_vpc_project_v2.new_project.id
   }
 }
@@ -58,5 +63,5 @@ provider "openstack" {
   tenant_id   = selectel_vpc_project_v2.new_project.id
   user_name   = selectel_iam_serviceuser_v1.new_admin.name
   password    = selectel_iam_serviceuser_v1.new_admin.password
-  region      = var.auth_region
+  region      = var.region
 }

@@ -6,19 +6,13 @@ variable "flavor_id" {
   description = "The ID of the flavor to use"
 }
 
-variable "availability_zone" {
-  default     = "ru-9a"
-  type        = string
-  description = "The availability zone to use"
-}
-
 variable "volume_size" {
   default     = "20"
   type        = string
   description = "The volume size to use"
 }
 
-variable "auth_region" {
+variable "region" {
   default     = "ru-9"
   type        = string
   description = "The availability auth zone to use == availability_zone"
@@ -40,7 +34,7 @@ variable "project-id" {
 }
 
 variable "project-name" {
-  default     = "<project-name>"
+  default     = "mks"
   type        = string
   description = "The name of the project"
   sensitive   = true
@@ -71,19 +65,5 @@ variable "service-ssh-key-name" {
   default     = "<name>"
   description = "Type the command and get the name: 'openstack keypair list'"
   type        = string
-  sensitive   = true
-}
-
-variable "temp-service-account-name" {
-  default     = "<name>"
-  type        = string
-  description = "The name of the service account for the new project"
-  sensitive   = true
-}
-
-variable "temp-service-account-password" {
-  default     = "<password>"
-  type        = string
-  description = "The password of the service account for the new project"
   sensitive   = true
 }

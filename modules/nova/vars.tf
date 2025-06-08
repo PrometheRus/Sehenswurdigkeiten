@@ -3,34 +3,13 @@ variable "hostname" {
   type = string
 }
 
-# openstack flavor show PRC20.2-2048 -c id -f value
-variable "flavor_id" {
-  default = "9023"
-  type = string
-}
-
-variable "availability_zone" {
-  default     = "ru-9a"
-  type        = string
-  description = "The availability zone to use"
-}
-
-variable "image_id" {
-  default     = "image_id"
-  type        = string
-  description = "The ID of the image to use"
+variable "region" {
+  default     = "ru-7"
 }
 
 variable "volume_size" {
   default     = "40"
-  type        = string
   description = "The volume size to use"
-}
-
-variable "key_pair" {
-  default     = "key_pair"
-  type        = string
-  sensitive   = true
 }
 
 variable "first_port_id" {
@@ -46,4 +25,16 @@ variable "second_port_id" {
 variable "user_data" {
   default = "init_vm.sh"
   type = string
+}
+
+variable "project" {
+  default = "default_project"
+}
+
+variable "distro" {
+  default = "Alma Linux 9 64-bit"
+}
+
+variable "keypair" {
+  default = "default_keypair"
 }
