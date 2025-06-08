@@ -2,11 +2,20 @@
 
 basic() {
   timedatectl set-timezone Europe/Moscow
+  useradd -m vmuser
+  mkdir -m 700 /home/vmuser/.ssh
+
+  tee -a /home/vmuser/.ssh/authorized_keys > /dev/null <<EOF
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID0Qs3Wltt98Hx2A+dXIPFZEAgJ38afG9BOnxeeR41Bk For using VMs
+EOF
+
+  chown -R vmuser:vmuser /home/vmuser/.ssh
+  chmod 600 /home/vmuser/.ssh/authorized_keys
 
   tee -a /etc/hosts > /dev/null <<EOF
-<ip> k8master
-<ip> k8node1
-<ip> k8node2
+192.168.12.10 k8master
+192.168.12.11 k8node1
+192.168.12.12 k8node2
 EOF
 
   tee -a /etc/sudoers.d/vmuser > /dev/null <<EOF
@@ -75,6 +84,6 @@ packages
 containerd
 systemd
 
-if [ "$(hostname)" == "k8master" ]; then
-  init_kube
-fi;
+#if [ "$(hostname)" == "k8master" ]; then
+#  init_kube
+#fi;
