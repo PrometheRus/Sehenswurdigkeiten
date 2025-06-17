@@ -9,10 +9,10 @@ provider "registry.terraform.io/hashicorp/random" {
 }
 
 provider "registry.terraform.io/selectel/selectel" {
-  version     = "6.4.1"
-  constraints = "~> 6.4.0"
+  version     = "6.5.0"
+  constraints = "~> 6.5.0"
   hashes = [
-    "h1:POu2CB1qEQ8xImLey8Qys0YsFjk/RVnG5/QdV7yapoA=",
+    "h1:a2Gs5CuwEeV/2rkt9JJs2QR8OnFXqoT2NL+0u2FlOxc=",
   ]
 }
 

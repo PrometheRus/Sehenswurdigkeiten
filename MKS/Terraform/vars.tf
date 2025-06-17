@@ -1,11 +1,4 @@
 # ПОДСТАВЬ СВОЕ ЗНАЧЕНИЕ ПРИ НЕОБХОДИМОСТИ
-# openstack flavor show SL1.4-16384 -c id -f value
-variable "flavor_id" {
-  default     = "9023" # PRC20.2-2048
-  type        = string
-  description = "The ID of the flavor to use"
-}
-
 variable "volume_size" {
   default     = "20"
   type        = string

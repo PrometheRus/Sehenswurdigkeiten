@@ -34,7 +34,7 @@ provider "selectel" {
 }
 
 resource "selectel_vpc_project_v2" "new_project" {
-  name = "temporary-${var.project_name}-project"
+  name = "temporary-${var.project-name}-project"
 }
 
 resource "random_password" "password" {
@@ -47,7 +47,7 @@ resource "random_password" "password" {
 }
 
 resource "selectel_iam_serviceuser_v1" "new_admin" {
-  name     = "temporary-${var.project_name}-admin"
+  name     = "temporary-${var.project-name}-admin"
   password = random_password.password.result
   role {
     role_name  = "member"

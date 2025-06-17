@@ -3,7 +3,7 @@
 ## 0. Prerequisites:
 #### Ваши креды сервисного аккаунта и прочая добавить в директорию Terraform:
 ```commandline
-tee ./secret.tfvars > /dev/null << EOF
+tee Terraform/.secrets.tfvars > /dev/null << EOF
 domain                          = "<domain>"
 project-id                      = "<project-id>"
 project-name                    = "<project-name>"
@@ -17,7 +17,7 @@ EOF
 ```
 #### Ваши секреты объектного хранилища для сохранения ```terraform.state``` удаленно (либо удалите полностью блок ```backend``` из ```main.tf``` - в этом случае state будет сохранен только локально):
 ```commandline
-tee ./secret.backend.tfvars > /dev/null << EOF
+tee Terraform/.backend.tfvars > /dev/null << EOF
 bucket     = "<bucket>"
 access_key = "<key>"
 secret_key = "<key>"
@@ -27,11 +27,11 @@ EOF
 ## 1. Deployment
 
 ```commandline
-cd Sehenswurdigkeiten/MKS/Terraform/
-terraform init -backend-config=secret.backend.tfvars
-terraform plan -var-file=secret.tfvars
+cd Terraform/
+terraform init -backend-config=.backend.tfvars
+terraform plan -var-file=.secrets.tfvars
 
 # Если все ок:
-terraform apply -var-file=secret.tfvars -auto-approve
+terraform apply -var-file=ssecrets.tfvars -auto-approve
 ```
 После выполнения будет создан кластер MKS
