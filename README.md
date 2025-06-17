@@ -1,1 +1,1 @@
-# DO NOT READ ME
+Moved to https://gitlab.com/nikitavl13/Sehenswurdigkeiten
